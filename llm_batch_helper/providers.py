@@ -74,9 +74,7 @@ async def get_llm_response_with_internal_retry(
             return cached_response["llm_response"]
 
     try:
-        if provider.lower() == "gemini":
-            response = await _get_gemini_response_direct(prompt, config)
-        elif provider.lower() == "openai":
+        if provider.lower() == "openai":
             response = await _get_openai_response_direct(prompt, config)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
