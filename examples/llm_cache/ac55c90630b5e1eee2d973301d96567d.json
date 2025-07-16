@@ -1,0 +1,11 @@
+{
+  "prompt_input": "Who wrote 'Hamlet'? Answer concisely.",
+  "llm_response": {
+    "response_text": "William Shakespeare wrote 'Hamlet'.",
+    "usage_details": {
+      "prompt_token_count": 30,
+      "completion_token_count": 7,
+      "total_token_count": 37
+    }
+  }
+}

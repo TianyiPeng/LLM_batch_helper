@@ -1,0 +1,11 @@
+{
+  "prompt_input": "Write a short poem about coding. Make it fun and rhyming.",
+  "llm_response": {
+    "response_text": "In a world of zeros, ones, and code,  \nA coder\u2019s journey, a winding road.  \nWith fingers flying, keys do dance,  \nIn logic\u2019s grip, they take a chance.  \n\nA bug appears, oh what a fright!  \nBut with a debug, they set it right.  \nLoops and functions, a clever game,  \nIn the realm of tech, they stake their claim.  \n\nFrom HTML to Python\u2019s flair,  \nCreativity blooms with every line laid bare",
+    "usage_details": {
+      "prompt_token_count": 34,
+      "completion_token_count": 100,
+      "total_token_count": 134
+    }
+  }
+}

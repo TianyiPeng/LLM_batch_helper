@@ -1,0 +1,11 @@
+{
+  "prompt_input": "Tell me an interesting fact about black holes. Keep it under 50 words.",
+  "llm_response": {
+    "response_text": "Black holes can warp time and space due to their immense gravity. Near a black hole, time slows down significantly compared to areas far away, a phenomenon predicted by Einstein\u2019s theory of relativity, making it possible for time travelers to exist\u2014at least theoretically!",
+    "usage_details": {
+      "prompt_token_count": 35,
+      "completion_token_count": 52,
+      "total_token_count": 87
+    }
+  }
+}

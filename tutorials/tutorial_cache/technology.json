@@ -1,0 +1,11 @@
+{
+  "prompt_input": "Explain quantum computing to a 10-year-old.",
+  "llm_response": {
+    "response_text": "Sure! Imagine you have a really big box of LEGO bricks. Each brick can be either red or blue, and you want to build something cool with them. In regular computers, it\u2019s like having a helper that can only work with one LEGO brick at a time\u2014first it picks a red brick, then a blue one, and keeps going one after the other.\n\nNow, quantum computing is like having a magical helper who can work with many LEGO bricks at the same time! Instead of just choosing",
+    "usage_details": {
+      "prompt_token_count": 29,
+      "completion_token_count": 100,
+      "total_token_count": 129
+    }
+  }
+}

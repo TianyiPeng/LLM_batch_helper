@@ -1,0 +1,11 @@
+{
+  "prompt_input": "What is the meaning of life according to different philosophical traditions?",
+  "llm_response": {
+    "response_text": "The meaning of life has been a central question in philosophy, and various traditions offer different perspectives. Here are some key philosophical traditions and their views on the meaning of life:\n\n1. **Existentialism**: Existentialist philosophers, such as Jean-Paul Sartre and Albert Camus, argue that life has no inherent meaning. Instead, individuals must create their own meaning through choices and actions. Camus famously suggested embracing the absurdity of life and finding joy in the struggle against it.\n\n2.",
+    "usage_details": {
+      "prompt_token_count": 31,
+      "completion_token_count": 100,
+      "total_token_count": 131
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "prompt_input": "What is the capital of France? Answer briefly.",
+  "llm_response": {
+    "response_text": "The capital of France is Paris.",
+    "usage_details": {
+      "prompt_token_count": 29,
+      "completion_token_count": 7,
+      "total_token_count": 36
+    }
+  }
+}

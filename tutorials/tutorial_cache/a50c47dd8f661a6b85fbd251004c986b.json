@@ -1,0 +1,11 @@
+{
+  "prompt_input": "Describe the process of machine learning in simple terms.",
+  "llm_response": {
+    "response_text": "Sure! Machine learning is a way for computers to learn from data and make decisions or predictions without being explicitly programmed for each task. Here\u2019s a simple breakdown of the process:\n\n1. **Collect Data**: The first step is to gather a lot of information (data) that is relevant to the task. This could be images, text, numbers, or any other type of data.\n\n2. **Prepare the Data**: Once you have the data, you need to clean and organize it. This might involve removing errors, filling in missing values, or converting it into a format that the machine can understand.\n\n3. **Choose a Model**: A model is like a recipe that tells the computer how to learn from the data. There are",
+    "usage_details": {
+      "prompt_token_count": 29,
+      "completion_token_count": 150,
+      "total_token_count": 179
+    }
+  }
+}

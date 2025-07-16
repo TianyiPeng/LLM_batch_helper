@@ -1,0 +1,11 @@
+{
+  "prompt_input": "What is the largest planet in our solar system? Answer briefly.",
+  "llm_response": {
+    "response_text": "The largest planet in our solar system is Jupiter.",
+    "usage_details": {
+      "prompt_token_count": 32,
+      "completion_token_count": 10,
+      "total_token_count": 42
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "prompt_input": "Write a detailed explanation of how photosynthesis works.",
+  "llm_response": {
+    "response_text": "Photosynthesis is a biochemical process through which green plants, algae, and some bacteria convert light energy, typically from the sun, into chemical energy stored in glucose (sugar). This process is essential for life on Earth, as it produces oxygen as a byproduct and serves as the foundation of the food chain. Here\u2019s a detailed explanation of how photosynthesis works, including its stages, components, and overall significance.\n\n### Overview of Photosynthesis\n\nPhotosynthesis occurs primarily in the chloroplasts of plant cells, where chlorophyll, a green pigment, captures light energy. The overall chemical equation for photosynthesis can be summarized as:\n\n\\[ \n6 \\, \\text{CO}_2 + 6 \\, \\text{H}_2\\text",
+    "usage_details": {
+      "prompt_token_count": 29,
+      "completion_token_count": 150,
+      "total_token_count": 179
+    }
+  }
+}

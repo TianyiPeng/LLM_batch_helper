@@ -1,0 +1,11 @@
+{
+  "prompt_input": "What programming language is this tutorial written for? Answer briefly.",
+  "llm_response": {
+    "response_text": "I would need to see the tutorial or have information about it to determine the programming language it is written for. Please provide more details.",
+    "usage_details": {
+      "prompt_token_count": 31,
+      "completion_token_count": 27,
+      "total_token_count": 58
+    }
+  }
+}

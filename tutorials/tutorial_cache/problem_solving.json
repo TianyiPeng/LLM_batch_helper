@@ -1,0 +1,11 @@
+{
+  "prompt_input": "Explain how to solve a Rubik's cube in 3 simple steps.",
+  "llm_response": {
+    "response_text": "Solving a Rubik's Cube can be complex, but here's a simplified approach broken down into three essential steps:\n\n### Step 1: Solve the First Layer\n- **Create a White Cross**: Start with the white face. Make a cross by aligning the white edge pieces with their corresponding center colors.\n- **Finish the First Layer Corners**: Position the white corner pieces so that they are placed between the corresponding edge pieces, completing the white face.\n\n### Step 2: Solve the",
+    "usage_details": {
+      "prompt_token_count": 34,
+      "completion_token_count": 100,
+      "total_token_count": 134
+    }
+  }
+}

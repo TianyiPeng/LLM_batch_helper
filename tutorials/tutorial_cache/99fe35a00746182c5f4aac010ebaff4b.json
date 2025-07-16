@@ -1,0 +1,11 @@
+{
+  "prompt_input": "What is 2+2? Answer briefly.",
+  "llm_response": {
+    "response_text": "2 + 2 = 4.",
+    "usage_details": {
+      "prompt_token_count": 29,
+      "completion_token_count": 8,
+      "total_token_count": 37
+    }
+  }
+}
