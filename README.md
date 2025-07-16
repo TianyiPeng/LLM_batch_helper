@@ -46,12 +46,7 @@ export OPENAI_API_KEY="your-openai-api-key"
 
 ### 2. Interactive Tutorial (Recommended)
 
-Check out the comprehensive Jupyter notebook tutorial:
-
-```bash
-cd tutorials
-jupyter notebook llm_batch_helper_tutorial.ipynb
-```
+Check out the comprehensive Jupyter notebook [tutorial](https://github.com/TianyiPeng/LLM_batch_helper/blob/main/tutorials/llm_batch_helper_tutorial.ipynb).
 
 The tutorial covers all features with interactive examples!
 
