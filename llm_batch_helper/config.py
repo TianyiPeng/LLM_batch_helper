@@ -15,10 +15,14 @@ class LLMConfig:
         max_concurrent_requests: int = 5,
         verification_callback: Optional[Callable[..., bool]] = None,
         verification_callback_args: Optional[Dict] = None,
+        max_completion_tokens: Optional[int] = None,
     ):
         self.model_name = model_name
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.max_completion_tokens = max_completion_tokens
+        if self.max_tokens and not self.max_completion_tokens:
+            self.max_completion_tokens = self.max_tokens
         self.system_instruction = system_instruction or SYSTEM_INSTRUCTION
         self.max_retries = max_retries
         self.max_concurrent_requests = max_concurrent_requests

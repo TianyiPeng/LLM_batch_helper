@@ -43,11 +43,12 @@ async def _get_openai_response_direct(
             {"role": "system", "content": config.system_instruction},
             {"role": "user", "content": prompt},
         ]
+
         response = await aclient.chat.completions.create(
             model=config.model_name,
             messages=messages,
             temperature=config.temperature,
-            max_tokens=config.max_tokens,
+            max_completion_tokens=config.max_completion_tokens,
         )
         usage_details = {
             "prompt_token_count": response.usage.prompt_tokens,
