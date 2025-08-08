@@ -61,7 +61,7 @@ async def main():
     config = LLMConfig(
         model_name="gpt-4o-mini",
         temperature=0.7,
-        max_tokens=100,
+        max_completion_tokens=100,  # or use max_tokens for backward compatibility
         max_concurrent_requests=30 # number of concurrent requests with asyncIO
     )
     
@@ -99,7 +99,7 @@ async def process_files():
     config = LLMConfig(
         model_name="gpt-4o-mini",
         temperature=0.7,
-        max_tokens=200
+        max_completion_tokens=200
     )
     
     # Process all .txt files in a directory
@@ -155,7 +155,8 @@ Configuration class for LLM requests.
 LLMConfig(
     model_name: str,
     temperature: float = 0.7,
-    max_tokens: Optional[int] = None,
+    max_completion_tokens: Optional[int] = None,  # Preferred parameter
+    max_tokens: Optional[int] = None,  # Deprecated, kept for backward compatibility
     system_instruction: Optional[str] = None,
     max_retries: int = 10,
     max_concurrent_requests: int = 5,
