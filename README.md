@@ -6,7 +6,23 @@
 [![Documentation Status](https://readthedocs.org/projects/llm-batch-helper/badge/?version=latest)](https://llm-batch-helper.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Python package that enables batch submission of prompts to LLM APIs, with built-in async capabilities and response caching.
+A Python package that enables batch submission of prompts to LLM APIs, with built-in async capabilities, response caching, prompt verification, and more. This package is designed to streamline applications like LLM simulation, LLM-as-a-judge, and other batch processing scenarios.
+
+📖 **[Complete Documentation](https://llm-batch-helper.readthedocs.io/)** | 🚀 **[Quick Start Guide](https://llm-batch-helper.readthedocs.io/en/latest/quickstart.html)**
+
+## Why we designed this package
+
+Calling LLM APIs has become increasingly common, but several pain points exist in practice:
+
+1. **Efficient Batch Processing**: How do you run LLM calls in batches efficiently? Our async implementation is 3X-100X faster than multi-thread/multi-process approaches.
+
+2. **API Reliability**: LLM APIs can be unstable, so we need robust retry mechanisms when calls get interrupted.
+
+3. **Long-Running Simulations**: During long-running LLM simulations, computers can crash and APIs can fail. Can we cache LLM API calls to avoid repeating completed work?
+
+4. **Output Validation**: LLM outputs often have format requirements. If the output isn't right, we need to retry with validation.
+
+This package is designed to solve these exact pain points with async processing, intelligent caching, and comprehensive error handling. If there are some additional features you need, please post an issue.  
 
 ## Features
 
