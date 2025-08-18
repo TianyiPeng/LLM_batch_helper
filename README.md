@@ -1,8 +1,8 @@
 # LLM Batch Helper
 
-[![PyPI version](https://badge.fury.io/py/llm-batch-helper.svg)](https://badge.fury.io/py/llm-batch-helper)
-[![Downloads](https://pepy.tech/badge/llm-batch-helper)](https://pepy.tech/project/llm-batch-helper)
-[![Downloads/Month](https://pepy.tech/badge/llm-batch-helper/month)](https://pepy.tech/project/llm-batch-helper)
+[![PyPI version](https://badge.fury.io/py/llm_batch_helper.svg)](https://badge.fury.io/py/llm_batch_helper)
+[![Downloads](https://pepy.tech/badge/llm_batch_helper)](https://pepy.tech/project/llm_batch_helper)
+[![Downloads/Month](https://pepy.tech/badge/llm_batch_helper/month)](https://pepy.tech/project/llm_batch_helper)
 [![Documentation Status](https://readthedocs.org/projects/llm-batch-helper/badge/?version=latest)](https://llm-batch-helper.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
