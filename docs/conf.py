@@ -39,7 +39,6 @@ napoleon_include_private_with_doc = False
 # Intersphinx mapping
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'httpx': ('https://www.python-httpx.org', None),
 }
 
 # MyST settings
