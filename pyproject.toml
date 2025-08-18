@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "llm_batch_helper"
-version = "0.1.5"
+version = "0.1.6"
 description = "A Python package that enables batch submission of prompts to LLM APIs, with built-in async capabilities and response caching."
 authors = ["Tianyi Peng <tianyipeng95@gmail.com>"]
 readme = "README.md"
@@ -25,11 +25,11 @@ packages = [{include = "llm_batch_helper"}]
 python = "^3.11"
 httpx = ">=0.24.0,<2.0.0"
 openai = "^1.0.0"
-python-dotenv = "^1.0.0"
 tenacity = "^8.0.0"
 tqdm = "^4.65.0"
 
 [tool.poetry.group.dev.dependencies]
+python-dotenv = "^1.0.0"  # Optional for .env file support
 pytest = "^7.0.0"
 black = "^23.0.0"
 isort = "^5.12.0"

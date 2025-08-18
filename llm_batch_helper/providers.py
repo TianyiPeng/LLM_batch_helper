@@ -4,15 +4,12 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import httpx
 import openai
-from dotenv import load_dotenv
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from tqdm.asyncio import tqdm_asyncio
 
 from .cache import LLMCache
 from .config import LLMConfig
 from .input_handlers import get_prompts
-
-load_dotenv()
 
 
 @retry(

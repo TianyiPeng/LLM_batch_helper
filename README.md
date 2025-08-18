@@ -61,12 +61,29 @@ poetry shell
 
 ### 1. Set up environment variables
 
+**Option A: Environment Variables**
 ```bash
 # For OpenAI
 export OPENAI_API_KEY="your-openai-api-key"
 
 # For Together.ai
 export TOGETHER_API_KEY="your-together-api-key"
+```
+
+**Option B: .env File (Recommended for Development)**
+```python
+# In your script, before importing llm_batch_helper
+from dotenv import load_dotenv
+load_dotenv()  # Load from .env file
+
+# Then use the package normally
+from llm_batch_helper import LLMConfig, process_prompts_batch
+```
+
+Create a `.env` file in your project:
+```
+OPENAI_API_KEY=your-openai-api-key
+TOGETHER_API_KEY=your-together-api-key
 ```
 
 ### 2. Interactive Tutorial (Recommended)
@@ -79,7 +96,11 @@ The tutorial covers all features with interactive examples!
 
 ```python
 import asyncio
+from dotenv import load_dotenv  # Optional: for .env file support
 from llm_batch_helper import LLMConfig, process_prompts_batch
+
+# Optional: Load environment variables from .env file
+load_dotenv()
 
 async def main():
     # Create configuration
