@@ -60,6 +60,65 @@ async def _get_openai_response_direct(
             "usage_details": usage_details,
         }
 
+
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=4, max=60),
+    retry=retry_if_exception_type(
+        (
+            ConnectionError,
+            TimeoutError,
+            httpx.HTTPStatusError,
+            httpx.RequestError,
+        )
+    ),
+    reraise=True,
+)
+async def _get_together_response_direct(
+    prompt: str, config: LLMConfig
+) -> Dict[str, Union[str, Dict]]:
+    api_key = os.environ.get("TOGETHER_API_KEY")
+    if not api_key:
+        raise ValueError("TOGETHER_API_KEY environment variable not set")
+
+    async with httpx.AsyncClient(timeout=1000.0) as client:
+        messages = [
+            {"role": "system", "content": config.system_instruction},
+            {"role": "user", "content": prompt},
+        ]
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "model": config.model_name,
+            "messages": messages,
+            "temperature": config.temperature,
+            "max_tokens": config.max_completion_tokens,
+        }
+
+        response = await client.post(
+            "https://api.together.xyz/chat/completions",
+            json=payload,
+            headers=headers,
+        )
+        response.raise_for_status()
+        
+        response_data = response.json()
+        usage = response_data.get("usage", {})
+        usage_details = {
+            "prompt_token_count": usage.get("prompt_tokens", 0),
+            "completion_token_count": usage.get("completion_tokens", 0),
+            "total_token_count": usage.get("total_tokens", 0),
+        }
+        
+        return {
+            "response_text": response_data["choices"][0]["message"]["content"],
+            "usage_details": usage_details,
+        }
+
 async def get_llm_response_with_internal_retry(
     prompt_id: str,
     prompt: str,
@@ -77,6 +136,8 @@ async def get_llm_response_with_internal_retry(
     try:
         if provider.lower() == "openai":
             response = await _get_openai_response_direct(prompt, config)
+        elif provider.lower() == "together":
+            response = await _get_together_response_direct(prompt, config)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
 
@@ -107,7 +168,7 @@ async def process_prompts_batch(
         prompts: Optional list of prompts in any supported format (string, tuple, or dict)
         input_dir: Optional path to directory containing prompt files
         config: LLM configuration
-        provider: LLM provider to use ("openai" or "gemini")
+        provider: LLM provider to use ("openai", "together", or "gemini")
         desc: Description for progress bar
         cache_dir: Optional directory for caching responses
         force: If True, force regeneration even if cached response exists

@@ -7,7 +7,7 @@ A Python package that enables batch submission of prompts to LLM APIs, with buil
 - **Async Processing**: Submit multiple prompts concurrently for faster processing
 - **Response Caching**: Automatically cache responses to avoid redundant API calls
 - **Multiple Input Formats**: Support for both file-based and list-based prompts
-- **Provider Support**: Works with OpenAI API
+- **Provider Support**: Works with OpenAI and Together.ai APIs
 - **Retry Logic**: Built-in retry mechanism with exponential backoff
 - **Verification Callbacks**: Custom verification for response quality
 - **Progress Tracking**: Real-time progress bars for batch operations
@@ -42,6 +42,9 @@ poetry shell
 ```bash
 # For OpenAI
 export OPENAI_API_KEY="your-openai-api-key"
+
+# For Together.ai
+export TOGETHER_API_KEY="your-together-api-key"
 ```
 
 ### 2. Interactive Tutorial (Recommended)
@@ -172,7 +175,7 @@ Main function for batch processing of prompts.
 ```python
 async def process_prompts_batch(
     config: LLMConfig,
-    provider: str,  # "openai"
+    provider: str,  # "openai" or "together"
     prompts: Optional[List[str]] = None,
     input_dir: Optional[str] = None,
     cache_dir: str = "llm_cache",
@@ -229,6 +232,23 @@ llm_batch_helper/
 - gpt-4
 - gpt-3.5-turbo
 
+### Together.ai
+- meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo
+- meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo
+- mistralai/Mixtral-8x7B-Instruct-v0.1
+- And many other open-source models
+
+## Documentation
+
+📖 **[Complete Documentation](https://llm-batch-helper.readthedocs.io/)** - Comprehensive docs on Read the Docs
+
+### Quick Links:
+- [Quick Start Guide](https://llm-batch-helper.readthedocs.io/en/latest/quickstart.html) - Get started quickly
+- [API Reference](https://llm-batch-helper.readthedocs.io/en/latest/api.html) - Complete API documentation  
+- [Examples](https://llm-batch-helper.readthedocs.io/en/latest/examples.html) - Practical usage examples
+- [Tutorials](https://llm-batch-helper.readthedocs.io/en/latest/tutorials.html) - Step-by-step tutorials
+- [Provider Guide](https://llm-batch-helper.readthedocs.io/en/latest/providers.html) - OpenAI & Together.ai setup
+
 ## Contributing
 
 1. Fork the repository
@@ -243,6 +263,12 @@ llm_batch_helper/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.1.5
+- Added Together.ai provider support
+- Support for open-source models (Llama, Mixtral, etc.)
+- Enhanced documentation with Read the Docs
+- Updated examples and tutorials
 
 ### v0.1.0
 - Initial release
