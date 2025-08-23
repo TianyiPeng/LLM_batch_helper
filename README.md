@@ -29,7 +29,7 @@ This package is designed to solve these exact pain points with async processing,
 - **Async Processing**: Submit multiple prompts concurrently for faster processing
 - **Response Caching**: Automatically cache responses to avoid redundant API calls
 - **Multiple Input Formats**: Support for both file-based and list-based prompts
-- **Provider Support**: Works with OpenAI and Together.ai APIs
+- **Provider Support**: Works with OpenAI (all models including GPT-5), OpenRouter (100+ models), and Together.ai APIs
 - **Retry Logic**: Built-in retry mechanism with exponential backoff
 - **Verification Callbacks**: Custom verification for response quality
 - **Progress Tracking**: Real-time progress bars for batch operations
@@ -63,8 +63,11 @@ poetry shell
 
 **Option A: Environment Variables**
 ```bash
-# For OpenAI
+# For OpenAI (all models including GPT-5)
 export OPENAI_API_KEY="your-openai-api-key"
+
+# For OpenRouter (100+ models - Recommended)
+export OPENROUTER_API_KEY="your-openrouter-api-key"
 
 # For Together.ai
 export TOGETHER_API_KEY="your-together-api-key"
@@ -134,6 +137,39 @@ if __name__ == "__main__":
 ```
 
 ## Usage Examples
+
+### OpenRouter (Recommended - 100+ Models)
+
+```python
+import asyncio
+from llm_batch_helper import LLMConfig, process_prompts_batch
+
+async def openrouter_example():
+    # Access 100+ models through OpenRouter
+    config = LLMConfig(
+        model_name="deepseek/deepseek-v3.1-base",  # or openai/gpt-4o, anthropic/claude-3-5-sonnet
+        temperature=0.7,
+        max_completion_tokens=500
+    )
+    
+    prompts = [
+        "Explain quantum computing briefly.",
+        "What are the benefits of renewable energy?",
+        "How does machine learning work?"
+    ]
+    
+    results = await process_prompts_batch(
+        prompts=prompts,
+        config=config,
+        provider="openrouter"  # Access to 100+ models!
+    )
+    
+    for prompt_id, result in results.items():
+        print(f"Response: {result['response_text']}")
+
+if __name__ == "__main__":
+    asyncio.run(openrouter_example())
+```
 
 ### File-based Prompts
 
@@ -218,7 +254,7 @@ Main function for batch processing of prompts.
 ```python
 async def process_prompts_batch(
     config: LLMConfig,
-    provider: str,  # "openai", "together", or "openrouter"
+    provider: str,  # "openai", "openrouter" (recommended), or "together"
     prompts: Optional[List[str]] = None,
     input_dir: Optional[str] = None,
     cache_dir: str = "llm_cache",
@@ -270,10 +306,15 @@ llm_batch_helper/
 ## Supported Models
 
 ### OpenAI
-- gpt-4o-mini
-- gpt-4o
-- gpt-4
-- gpt-3.5-turbo
+- **All OpenAI models** 
+
+### OpenRouter (Recommended - 100+ Models)
+- **OpenAI models**: `openai/gpt-4o`, `openai/gpt-4o-mini`
+- **Anthropic models**: `anthropic/claude-3-5-sonnet`, `anthropic/claude-3-haiku`
+- **DeepSeek models**: `deepseek/deepseek-v3.1-base`, `deepseek/deepseek-chat`
+- **Meta models**: `meta-llama/llama-3.1-405b-instruct`
+- **Google models**: `google/gemini-pro-1.5`
+- **And 90+ more models** from all major providers
 
 ### Together.ai
 - meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo
@@ -290,7 +331,7 @@ llm_batch_helper/
 - [API Reference](https://llm-batch-helper.readthedocs.io/en/latest/api.html) - Complete API documentation  
 - [Examples](https://llm-batch-helper.readthedocs.io/en/latest/examples.html) - Practical usage examples
 - [Tutorials](https://llm-batch-helper.readthedocs.io/en/latest/tutorials.html) - Step-by-step tutorials
-- [Provider Guide](https://llm-batch-helper.readthedocs.io/en/latest/providers.html) - OpenAI & Together.ai setup
+- [Provider Guide](https://llm-batch-helper.readthedocs.io/en/latest/providers.html) - OpenAI, OpenRouter & Together.ai setup
 
 ## Contributing
 
