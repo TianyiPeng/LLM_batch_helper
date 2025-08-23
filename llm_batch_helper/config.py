@@ -16,6 +16,7 @@ class LLMConfig:
         verification_callback: Optional[Callable[..., bool]] = None,
         verification_callback_args: Optional[Dict] = None,
         max_completion_tokens: Optional[int] = None,
+        **kwargs
     ):
         self.model_name = model_name
         self.temperature = temperature
@@ -30,3 +31,4 @@ class LLMConfig:
         self.verification_callback_args = (
             verification_callback_args if verification_callback_args is not None else {}
         )
+        self.kwargs = kwargs

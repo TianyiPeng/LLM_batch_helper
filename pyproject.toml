@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "llm_batch_helper"
-version = "0.1.6"
+version = "0.2.0"
 description = "A Python package that enables batch submission of prompts to LLM APIs, with built-in async capabilities and response caching."
 authors = ["Tianyi Peng <tianyipeng95@gmail.com>"]
 readme = "README.md"
 license = "MIT"
 homepage = "https://github.com/TianyiPeng/LLM_batch_helper"
 repository = "https://github.com/TianyiPeng/LLM_batch_helper"
-keywords = ["llm", "openai", "together", "batch", "async", "ai", "nlp", "api"]
+keywords = ["llm", "openai", "together", "openrouter", "batch", "async", "ai", "nlp", "api"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",

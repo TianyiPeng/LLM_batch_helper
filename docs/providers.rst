@@ -81,27 +81,71 @@ The Together.ai provider supports various open-source models hosted on Together.
        prompts=your_prompts
    )
 
+OpenRouter
+~~~~~~~~~~
+
+The OpenRouter provider provides access to a wide variety of language models from different providers through a unified API.
+
+**Setup:**
+
+.. code-block:: bash
+
+   export OPENROUTER_API_KEY="your-openrouter-api-key"
+
+**Popular Models:**
+
+- ``openai/gpt-4o``
+- ``openai/gpt-4o-mini``
+- ``anthropic/claude-3-5-sonnet``
+- ``meta-llama/llama-3.1-405b-instruct``
+- ``google/gemini-pro-1.5``
+- ``mistralai/mixtral-8x7b-instruct``
+
+**Example:**
+
+.. code-block:: python
+
+   from llm_batch_helper import LLMConfig, process_prompts_batch
+
+   config = LLMConfig(
+       model_name="openai/gpt-4o-mini",
+       temperature=0.7,
+       max_completion_tokens=500,
+       system_instruction="You are a helpful AI assistant."
+   )
+
+   results = await process_prompts_batch(
+       config=config,
+       provider="openrouter",
+       prompts=your_prompts
+   )
+
 Provider Comparison
 -------------------
 
 .. list-table::
    :header-rows: 1
 
-   * - Feature
+     * - Feature
      - OpenAI
      - Together.ai
-   * - Model Variety
+     - OpenRouter
+  * - Model Variety
      - OpenAI models only
      - Many open-source models
-   * - Pricing
+     - 100+ models from all providers
+  * - Pricing
      - Per-token pricing
      - Competitive pricing
-   * - Rate Limits
+     - Varies by model, competitive
+  * - Rate Limits
      - Tier-based limits
      - Model-dependent limits
-   * - Response Quality
+     - Credit-based system
+  * - Response Quality
      - Very high (GPT-4)
      - Varies by model
+     - Depends on chosen model
    * - Speed
      - Fast
      - Varies by model

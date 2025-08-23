@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-01-15
+
+### Added
+- **New Provider Support**: OpenRouter integration for access to 100+ AI models
+- Support for DeepSeek models (deepseek-chat, deepseek-v3.1-base) via OpenRouter
+- Additional kwargs support in LLMConfig for provider-specific parameters
+- Comprehensive OpenRouter documentation and examples
+
+### Enhanced
+- Provider system now supports OpenAI, Together.ai, and OpenRouter
+- Updated documentation with OpenRouter setup instructions and model examples
+- Enhanced provider comparison table including OpenRouter features
+
+### Technical
+- Added `_get_openrouter_response_direct` function with proper retry logic
+- Extended provider dispatcher to handle OpenRouter API calls
+- OpenRouter API endpoint: `https://openrouter.ai/api/v1/chat/completions`
+- Full compatibility with existing caching and verification systems
+
+### Documentation
+- Updated `docs/providers.rst` with OpenRouter configuration guide
+- Added OpenRouter to README.md provider list
+- Enhanced provider comparison with OpenRouter features and pricing model
+
 ## [0.1.4] - 2025-08-08
 
 ### Added

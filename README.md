@@ -218,7 +218,7 @@ Main function for batch processing of prompts.
 ```python
 async def process_prompts_batch(
     config: LLMConfig,
-    provider: str,  # "openai" or "together"
+    provider: str,  # "openai", "together", or "openrouter"
     prompts: Optional[List[str]] = None,
     input_dir: Optional[str] = None,
     cache_dir: str = "llm_cache",

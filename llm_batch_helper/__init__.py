@@ -3,7 +3,7 @@ from .config import LLMConfig
 from .input_handlers import get_prompts, read_prompt_files, read_prompt_list
 from .providers import process_prompts_batch
 
-__version__ = "0.1.6"
+__version__ = "0.2.0"
 
 __all__ = [
     "LLMCache",
