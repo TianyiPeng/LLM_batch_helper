@@ -1,15 +1,66 @@
 import asyncio
 import os
 from typing import Any, Dict, List, Optional, Tuple, Union
+from datetime import datetime
+import warnings
 
 import httpx
 import openai
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential, before_sleep_log
 from tqdm.asyncio import tqdm_asyncio
 
 from .cache import LLMCache
 from .config import LLMConfig
 from .input_handlers import get_prompts
+
+
+def _run_async_function(async_func, *args, **kwargs):
+    """
+    Run an async function in a way that works in both regular Python and Jupyter notebooks.
+    
+    This handles the event loop management properly for different environments.
+    """
+    try:
+        # Try to get the current event loop
+        loop = asyncio.get_running_loop()
+        # If we're in a running loop (like Jupyter), we need to use nest_asyncio
+        try:
+            import nest_asyncio
+            nest_asyncio.apply()
+            return asyncio.run(async_func(*args, **kwargs))
+        except ImportError:
+            # If nest_asyncio is not available, try to run in the current loop
+            # This is a fallback that might work in some cases
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(asyncio.run, async_func(*args, **kwargs))
+                return future.result()
+    except RuntimeError:
+        # No event loop running, we can use asyncio.run directly
+        return asyncio.run(async_func(*args, **kwargs))
+
+
+def log_retry_attempt(retry_state):
+    """Custom logging function for retry attempts."""
+    attempt_number = retry_state.attempt_number
+    exception = retry_state.outcome.exception()
+    wait_time = retry_state.next_action.sleep if retry_state.next_action else 0
+    
+    error_type = type(exception).__name__
+    error_msg = str(exception)
+    
+    # Extract status code if available
+    status_code = "unknown"
+    if hasattr(exception, 'status_code'):
+        status_code = exception.status_code
+    elif hasattr(exception, 'response') and hasattr(exception.response, 'status_code'):
+        status_code = exception.response.status_code
+    
+    print(f"🔄 [{datetime.now().strftime('%H:%M:%S')}] Retry attempt {attempt_number}/5:")
+    print(f"   Error: {error_type} (status: {status_code})")
+    print(f"   Message: {error_msg[:100]}{'...' if len(error_msg) > 100 else ''}")
+    print(f"   Waiting {wait_time:.1f}s before next attempt...")
+    print()
 
 
 @retry(
@@ -25,6 +76,7 @@ from .input_handlers import get_prompts
             openai.APIError,
         )
     ),
+    before_sleep=log_retry_attempt,
     reraise=True,
 )
 async def _get_openai_response_direct(
@@ -130,6 +182,7 @@ async def _get_together_response_direct(
             httpx.RequestError,
         )
     ),
+    before_sleep=log_retry_attempt,
     reraise=True,
 )
 async def _get_openrouter_response_direct(
@@ -214,7 +267,7 @@ async def get_llm_response_with_internal_retry(
         }
 
 
-async def process_prompts_batch(
+async def process_prompts_batch_async(
     prompts: Optional[List[Union[str, Tuple[str, str], Dict[str, Any]]]] = None,
     input_dir: Optional[str] = None,
     config: LLMConfig = None,
@@ -270,6 +323,57 @@ async def process_prompts_batch(
     return results
 
 
+def process_prompts_batch(
+    prompts: Optional[List[Union[str, Tuple[str, str], Dict[str, Any]]]] = None,
+    input_dir: Optional[str] = None,
+    config: LLMConfig = None,
+    provider: str = "openai",
+    desc: str = "Processing prompts",
+    cache_dir: Optional[str] = None,
+    force: bool = False,
+) -> Dict[str, Dict[str, Union[str, Dict]]]:
+    """
+    Process a batch of prompts through the LLM (synchronous version).
+    
+    This is the main user-facing function that works in both regular Python scripts
+    and Jupyter notebooks without requiring async/await syntax.
+    
+    Args:
+        prompts: Optional list of prompts in any supported format (string, tuple, or dict)
+        input_dir: Optional path to directory containing prompt files
+        config: LLM configuration
+        provider: LLM provider to use ("openai", "together", or "openrouter")
+        desc: Description for progress bar
+        cache_dir: Optional directory for caching responses
+        force: If True, force regeneration even if cached response exists
+
+    Returns:
+        Dict mapping prompt IDs to their responses
+
+    Note:
+        Either prompts or input_dir must be provided, but not both.
+        
+    Example:
+        >>> from llm_batch_helper import LLMConfig, process_prompts_batch
+        >>> config = LLMConfig(model_name="gpt-4o-mini")
+        >>> results = process_prompts_batch(
+        ...     prompts=["What is 2+2?", "What is the capital of France?"],
+        ...     config=config,
+        ...     provider="openai"
+        ... )
+    """
+    return _run_async_function(
+        process_prompts_batch_async,
+        prompts=prompts,
+        input_dir=input_dir,
+        config=config,
+        provider=provider,
+        desc=desc,
+        cache_dir=cache_dir,
+        force=force,
+    )
+
+
 async def _process_single_prompt_attempt_with_verification(
     prompt_id: str,
     prompt_text: str,
@@ -302,6 +406,9 @@ async def _process_single_prompt_attempt_with_verification(
         # Process the prompt
         last_exception_details = None
         for attempt in range(config.max_retries):
+            if attempt > 0:
+                print(f"🔁 [{datetime.now().strftime('%H:%M:%S')}] Application-level retry {attempt+1}/{config.max_retries} for prompt: {prompt_id}")
+            
             try:
                 # Get LLM response
                 llm_response_data = await get_llm_response_with_internal_retry(
@@ -309,7 +416,12 @@ async def _process_single_prompt_attempt_with_verification(
                 )
 
                 if "error" in llm_response_data:
+                    print(f"❌ [{datetime.now().strftime('%H:%M:%S')}] API call failed on attempt {attempt+1}: {llm_response_data.get('error', 'Unknown error')}")
                     last_exception_details = llm_response_data
+                    if attempt < config.max_retries - 1:
+                        wait_time = min(2 * 2**attempt, 30)
+                        print(f"   Waiting {wait_time}s before next application retry...")
+                        await asyncio.sleep(wait_time)
                     continue
 
                 # Verify response if callback provided
@@ -329,7 +441,6 @@ async def _process_single_prompt_attempt_with_verification(
                         }
                         if attempt == config.max_retries - 1:
                             return prompt_id, last_exception_details
-                        await asyncio.sleep(min(2 * 2**attempt, 30))
                         continue
 
                 # Save to cache if cache_dir provided
@@ -346,7 +457,7 @@ async def _process_single_prompt_attempt_with_verification(
                 }
                 if attempt == config.max_retries - 1:
                     return prompt_id, last_exception_details
-                await asyncio.sleep(min(2 * 2**attempt, 30))
+                # Sleep is now handled above with logging
                 continue
 
         return prompt_id, last_exception_details or {

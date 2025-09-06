@@ -8,7 +8,7 @@ class LLMConfig:
     def __init__(
         self,
         model_name: str,
-        temperature: float = 0.7,
+        temperature: float = 1.0,
         max_tokens: Optional[int] = None,
         system_instruction: Optional[str] = None,
         max_retries: int = 10,  # Max retries for the combined LLM call + Verification

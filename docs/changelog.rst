@@ -6,7 +6,62 @@ All notable changes to LLM Batch Helper will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
-[0.1.5] - 2025-08-17
+[0.3.0] - 2025-01-XX
+---------------------
+
+Added
+~~~~~
+- **🎉 Simplified API**: ``process_prompts_batch()`` now works without async/await syntax!
+- **📓 Jupyter Support**: Works seamlessly in notebooks without event loop management
+- **🔍 Detailed Retry Logging**: See exactly what happens during retries with timestamps and error details
+- **OpenRouter Provider**: Access to 100+ models through OpenRouter API (recommended)
+- **Smart Event Loop Handling**: Automatically detects and handles different Python environments
+- Support for ``nest_asyncio`` for improved Jupyter compatibility
+
+Changed
+~~~~~~~
+- **Major API Update**: ``process_prompts_batch()`` is now the main synchronous interface
+- **Default Temperature**: Changed from 0.7 to 1.0 to match OpenAI's defaults
+- **Parameter Naming**: ``max_completion_tokens`` is now the preferred parameter over ``max_tokens``
+- **Error Messages**: Enhanced error messages with retry attempt details
+- **Documentation**: All examples updated to show simplified API usage
+
+Fixed
+~~~~~
+- Jupyter notebook compatibility issues with asyncio event loops
+- Improved error handling for authentication failures (401 errors)
+- Better retry logic with exponential backoff logging
+
+Backward Compatibility
+~~~~~~~~~~~~~~~~~~~~~~
+- Original async API still available as ``process_prompts_batch_async()``
+- All existing code continues to work unchanged
+- Legacy ``max_tokens`` parameter still supported
+
+Migration Guide
+~~~~~~~~~~~~~~~
+
+**From v0.2.0 and earlier**:
+
+.. code-block:: python
+
+   # Old (still works)
+   import asyncio
+   results = await process_prompts_batch(...)
+   
+   # New (recommended)
+   results = process_prompts_batch(...)  # No async/await needed!
+
+[0.2.0] - 2024-XX-XX
+---------------------
+
+Changed
+~~~~~~~
+- Enhanced API stability
+- Improved error handling
+- Better documentation
+
+[0.1.5] - 2024-08-17
 ---------------------
 
 Added

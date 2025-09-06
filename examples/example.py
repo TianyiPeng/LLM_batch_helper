@@ -1,4 +1,3 @@
-import asyncio
 import os
 import sys
 from pathlib import Path
@@ -18,9 +17,9 @@ def example_verification_callback(
     return True
 
 
-async def run_batch(config, cache_dir, force, run_label, **kwargs):
+def run_batch(config, cache_dir, force, run_label, **kwargs):
     print(f"\n=== {run_label} (force={force}, cache_dir='{cache_dir}') ===")
-    results = await process_prompts_batch(
+    results = process_prompts_batch(
         config=config,
         provider="openai",
         desc=f"{run_label}",
@@ -43,13 +42,13 @@ async def run_batch(config, cache_dir, force, run_label, **kwargs):
             print(f"{status} Unhandled response for {prompt_id}: {response}")
 
 
-async def main():
+def main():
     cache_dir = "llm_cache"
     # Create a configuration for OpenAI
     config = LLMConfig(
         model_name="gpt-4o-mini",
-        temperature=0.7,
-        max_tokens=100,
+        temperature=1.0,
+        max_completion_tokens=100,
         max_retries=3,
         max_concurrent_requests=2,
         verification_callback=example_verification_callback,
@@ -65,7 +64,7 @@ async def main():
     ]
 
     # Run the list-based prompts
-    await run_batch(
+    run_batch(
         config=config,
         cache_dir=cache_dir,
         force=False,
@@ -90,7 +89,7 @@ async def main():
             f.write(content)
 
     # Run the folder-based prompts
-    await run_batch(
+    run_batch(
         config=config,
         cache_dir=cache_dir,
         force=False,
@@ -100,4 +99,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

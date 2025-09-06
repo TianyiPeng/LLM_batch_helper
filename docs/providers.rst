@@ -3,6 +3,8 @@ Provider Support
 
 LLM Batch Helper supports multiple LLM providers. Each provider has specific configuration requirements and supported models.
 
+🎉 **New in v0.3.0**: Simplified API - all examples now work without async/await!
+
 Supported Providers
 -------------------
 
@@ -33,15 +35,62 @@ The OpenAI provider supports all OpenAI chat completion models.
 
    config = LLMConfig(
        model_name="gpt-4o-mini",
-       temperature=0.7,
+       temperature=1.0,
        max_completion_tokens=500
    )
 
-   results = await process_prompts_batch(
+   results = process_prompts_batch(
        config=config,
        provider="openai",
        prompts=your_prompts
    )
+
+OpenRouter (Recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The OpenRouter provider gives you access to 100+ models from all major providers through a single API.
+
+**Setup:**
+
+.. code-block:: bash
+
+   export OPENROUTER_API_KEY="your-openrouter-api-key"
+
+**Popular Models:**
+
+- ``openai/gpt-4o`` - OpenAI's latest model
+- ``openai/gpt-4o-mini`` - Fast and cost-effective
+- ``anthropic/claude-3-5-sonnet`` - Anthropic's latest
+- ``deepseek/deepseek-v3.1-base`` - High-performance reasoning
+- ``meta-llama/llama-3.1-405b-instruct`` - Meta's largest model
+- ``google/gemini-pro-1.5`` - Google's multimodal model
+- And 90+ more models from all major providers!
+
+**Example:**
+
+.. code-block:: python
+
+   from llm_batch_helper import LLMConfig, process_prompts_batch
+
+   config = LLMConfig(
+       model_name="deepseek/deepseek-v3.1-base",  # or any OpenRouter model
+       temperature=1.0,
+       max_completion_tokens=500
+   )
+
+   results = process_prompts_batch(
+       config=config,
+       provider="openrouter",  # Access to 100+ models!
+       prompts=your_prompts
+   )
+
+**Benefits of OpenRouter:**
+
+- Access to 100+ models from all major providers
+- Unified API for all models
+- Competitive pricing
+- No need for multiple API keys
+- Easy model switching
 
 Together.ai
 ~~~~~~~~~~~
@@ -70,12 +119,12 @@ The Together.ai provider supports various open-source models hosted on Together.
 
    config = LLMConfig(
        model_name="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-       temperature=0.8,
+       temperature=1.0,
        max_completion_tokens=300,
        system_instruction="You are a helpful AI assistant."
    )
 
-   results = await process_prompts_batch(
+   results = process_prompts_batch(
        config=config,
        provider="together",
        prompts=your_prompts

@@ -30,9 +30,11 @@ This package is designed to solve these exact pain points with async processing,
 - **Response Caching**: Automatically cache responses to avoid redundant API calls
 - **Multiple Input Formats**: Support for both file-based and list-based prompts
 - **Provider Support**: Works with OpenAI (all models including GPT-5), OpenRouter (100+ models), and Together.ai APIs
-- **Retry Logic**: Built-in retry mechanism with exponential backoff
-- **Verification Callbacks**: Custom verification for response quality
+- **Retry Logic**: Built-in retry mechanism with exponential backoff and detailed logging
+- **Verification Callbacks**: Custom verification for response quality  
 - **Progress Tracking**: Real-time progress bars for batch operations
+- **Simplified API**: Async operations handled implicitly - no async/await needed (v0.3.0+)
+- **Detailed Error Logging**: See exactly what happens during retries with timestamps and error details
 
 ## Installation
 
@@ -98,42 +100,58 @@ The tutorial covers all features with interactive examples!
 ### 3. Basic usage
 
 ```python
-import asyncio
 from dotenv import load_dotenv  # Optional: for .env file support
 from llm_batch_helper import LLMConfig, process_prompts_batch
 
 # Optional: Load environment variables from .env file
 load_dotenv()
 
-async def main():
-    # Create configuration
-    config = LLMConfig(
-        model_name="gpt-4o-mini",
-        temperature=0.7,
-        max_completion_tokens=100,  # or use max_tokens for backward compatibility
-        max_concurrent_requests=30 # number of concurrent requests with asyncIO
-    )
-    
-    # Process prompts
-    prompts = [
-        "What is the capital of France?",
-        "What is 2+2?",
-        "Who wrote 'Hamlet'?"
-    ]
-    
-    results = await process_prompts_batch(
-        config=config,
-        provider="openai",
-        prompts=prompts,
-        cache_dir="cache"
-    )
-    
-    # Print results
-    for prompt_id, response in results.items():
-        print(f"{prompt_id}: {response['response_text']}")
+# Create configuration
+config = LLMConfig(
+    model_name="gpt-4o-mini",
+    temperature=1.0,
+    max_completion_tokens=100,
+    max_concurrent_requests=30  # number of concurrent requests with asyncIO
+)
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# Process prompts - no async/await needed!
+prompts = [
+    "What is the capital of France?",
+    "What is 2+2?",
+    "Who wrote 'Hamlet'?"
+]
+
+results = process_prompts_batch(
+    config=config,
+    provider="openai",
+    prompts=prompts,
+    cache_dir="cache"
+)
+
+# Print results
+for prompt_id, response in results.items():
+    print(f"{prompt_id}: {response['response_text']}")
+```
+
+**🎉 New in v0.3.0**: `process_prompts_batch` now handles async operations **implicitly** - no more async/await syntax needed! Works seamlessly in Jupyter notebooks.
+
+### 🔄 Backward Compatibility
+
+For users who prefer the async version or have existing code, the async API is still available:
+
+```python
+import asyncio
+from llm_batch_helper import process_prompts_batch_async
+
+async def main():
+    results = await process_prompts_batch_async(
+        prompts=["Hello world!"],
+        config=config,
+        provider="openai"
+    )
+    return results
+
+results = asyncio.run(main())
 ```
 
 ## Usage Examples
@@ -141,61 +159,52 @@ if __name__ == "__main__":
 ### OpenRouter (Recommended - 100+ Models)
 
 ```python
-import asyncio
 from llm_batch_helper import LLMConfig, process_prompts_batch
 
-async def openrouter_example():
-    # Access 100+ models through OpenRouter
-    config = LLMConfig(
-        model_name="deepseek/deepseek-v3.1-base",  # or openai/gpt-4o, anthropic/claude-3-5-sonnet
-        temperature=0.7,
-        max_completion_tokens=500
-    )
-    
-    prompts = [
-        "Explain quantum computing briefly.",
-        "What are the benefits of renewable energy?",
-        "How does machine learning work?"
-    ]
-    
-    results = await process_prompts_batch(
-        prompts=prompts,
-        config=config,
-        provider="openrouter"  # Access to 100+ models!
-    )
-    
-    for prompt_id, result in results.items():
-        print(f"Response: {result['response_text']}")
+# Access 100+ models through OpenRouter
+config = LLMConfig(
+    model_name="deepseek/deepseek-v3.1-base",  # or openai/gpt-4o, anthropic/claude-3-5-sonnet
+    temperature=1.0,
+    max_completion_tokens=500
+)
 
-if __name__ == "__main__":
-    asyncio.run(openrouter_example())
+prompts = [
+    "Explain quantum computing briefly.",
+    "What are the benefits of renewable energy?",
+    "How does machine learning work?"
+]
+
+results = process_prompts_batch(
+    prompts=prompts,
+    config=config,
+    provider="openrouter"  # Access to 100+ models!
+)
+
+for prompt_id, result in results.items():
+    print(f"Response: {result['response_text']}")
 ```
 
 ### File-based Prompts
 
 ```python
-import asyncio
 from llm_batch_helper import LLMConfig, process_prompts_batch
 
-async def process_files():
-    config = LLMConfig(
-        model_name="gpt-4o-mini",
-        temperature=0.7,
-        max_completion_tokens=200
-    )
-    
-    # Process all .txt files in a directory
-    results = await process_prompts_batch(
-        config=config,
-        provider="openai",
-        input_dir="prompts",  # Directory containing .txt files
-        cache_dir="cache",
-        force=False  # Use cached responses if available
-    )
-    
-    return results
+config = LLMConfig(
+    model_name="gpt-4o-mini",
+    temperature=1.0,
+    max_completion_tokens=200
+)
 
-asyncio.run(process_files())
+# Process all .txt files in a directory
+results = process_prompts_batch(
+    config=config,
+    provider="openai",
+    input_dir="prompts",  # Directory containing .txt files
+    cache_dir="cache",
+    force=False  # Use cached responses if available
+)
+
+print(f"Processed {len(results)} prompts from files")
 ```
 
 ### Custom Verification
@@ -219,7 +228,7 @@ def verify_response(prompt_id, llm_response_data, original_prompt_text, **kwargs
 
 config = LLMConfig(
     model_name="gpt-4o-mini",
-    temperature=0.7,
+    temperature=1.0,
     verification_callback=verify_response,
     verification_callback_args={"min_length": 20}
 )
@@ -236,7 +245,7 @@ Configuration class for LLM requests.
 ```python
 LLMConfig(
     model_name: str,
-    temperature: float = 0.7,
+    temperature: float = 1.0,
     max_completion_tokens: Optional[int] = None,  # Preferred parameter
     max_tokens: Optional[int] = None,  # Deprecated, kept for backward compatibility
     system_instruction: Optional[str] = None,
@@ -249,10 +258,26 @@ LLMConfig(
 
 ### process_prompts_batch
 
-Main function for batch processing of prompts.
+Main function for batch processing of prompts (async operations handled implicitly).
 
 ```python
-async def process_prompts_batch(
+def process_prompts_batch(
+    config: LLMConfig,
+    provider: str,  # "openai", "openrouter" (recommended), or "together"
+    prompts: Optional[List[str]] = None,
+    input_dir: Optional[str] = None,
+    cache_dir: str = "llm_cache",
+    force: bool = False,
+    desc: str = "Processing prompts"
+) -> Dict[str, Dict[str, Any]]
+```
+
+### process_prompts_batch_async
+
+Async version for backward compatibility and advanced use cases.
+
+```python
+async def process_prompts_batch_async(
     config: LLMConfig,
     provider: str,  # "openai", "openrouter" (recommended), or "together"
     prompts: Optional[List[str]] = None,
@@ -347,6 +372,19 @@ llm_batch_helper/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.3.0
+- **🎉 Major Update**: Simplified API - async operations handled implicitly, no async/await required!
+- **📓 Jupyter Support**: Works seamlessly in notebooks without event loop issues
+- **🔍 Detailed Retry Logging**: See exactly what happens during retries with timestamps
+- **🔄 Backward Compatibility**: Original async API still available as `process_prompts_batch_async`
+- **📚 Updated Examples**: All documentation updated to show simplified usage
+- **⚡ Smart Event Loop Handling**: Automatically detects and handles different Python environments
+
+### v0.2.0
+- Enhanced API stability
+- Improved error handling
+- Better documentation
 
 ### v0.1.5
 - Added Together.ai provider support
