@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-09-06
+
+### Changed
+- Updated default `max_retries` parameter in `LLMConfig` from 10 to 5 for faster failure detection and improved user experience
+- Updated default `max_concurrent_requests` parameter in `LLMConfig` from 5 to 30 for significantly improved batch processing performance
+
 ## [0.2.0] - 2025-01-15
 
 ### Added

@@ -249,8 +249,8 @@ LLMConfig(
     max_completion_tokens: Optional[int] = None,  # Preferred parameter
     max_tokens: Optional[int] = None,  # Deprecated, kept for backward compatibility
     system_instruction: Optional[str] = None,
-    max_retries: int = 10,
-    max_concurrent_requests: int = 5,
+    max_retries: int = 5,
+    max_concurrent_requests: int = 30,
     verification_callback: Optional[Callable] = None,
     verification_callback_args: Optional[Dict] = None
 )
@@ -372,6 +372,11 @@ llm_batch_helper/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.3.1
+- **🔧 Configuration Updates**: Optimized default values for better performance
+- Updated `max_retries` from 10 to 5 for faster failure detection
+- Updated `max_concurrent_requests` from 5 to 30 for improved batch processing performance
 
 ### v0.3.0
 - **🎉 Major Update**: Simplified API - async operations handled implicitly, no async/await required!

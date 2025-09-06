@@ -11,8 +11,8 @@ class LLMConfig:
         temperature: float = 1.0,
         max_tokens: Optional[int] = None,
         system_instruction: Optional[str] = None,
-        max_retries: int = 10,  # Max retries for the combined LLM call + Verification
-        max_concurrent_requests: int = 5,
+        max_retries: int = 5,  # Max retries for the combined LLM call + Verification
+        max_concurrent_requests: int = 30,
         verification_callback: Optional[Callable[..., bool]] = None,
         verification_callback_args: Optional[Dict] = None,
         max_completion_tokens: Optional[int] = None,
