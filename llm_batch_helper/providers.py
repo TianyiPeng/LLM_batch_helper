@@ -288,10 +288,11 @@ async def process_prompts_batch_async(
         force: If True, force regeneration even if cached response exists
 
     Returns:
-        Dict mapping prompt IDs to their responses
+        Dict mapping prompt IDs to their responses, ordered by input sequence
 
     Note:
         Either prompts or input_dir must be provided, but not both.
+        Results are returned in the same order as the input prompts.
     """
     if prompts is None and input_dir is None:
         raise ValueError("Either prompts or input_dir must be provided")
@@ -309,6 +310,9 @@ async def process_prompts_batch_async(
 
     # Process prompts
     results = {}
+    # Keep track of original order for sorting results
+    prompt_order = {prompt_id: idx for idx, (prompt_id, _) in enumerate(prompts)}
+    
     tasks = [
         _process_single_prompt_attempt_with_verification(
             prompt_id, prompt_text, config, provider, semaphore, cache_dir, force
@@ -320,7 +324,14 @@ async def process_prompts_batch_async(
         prompt_id, response_data = await future
         results[prompt_id] = response_data
 
-    return results
+    # Sort results by original input order to maintain input sequence
+    # Note: Python 3.7+ guarantees dict insertion order, we explicitly sort
+    # to ensure results match the original prompt order regardless of completion order
+    ordered_results = {}
+    for prompt_id in sorted(results.keys(), key=lambda pid: prompt_order[pid]):
+        ordered_results[prompt_id] = results[prompt_id]
+    
+    return ordered_results
 
 
 def process_prompts_batch(
@@ -348,10 +359,11 @@ def process_prompts_batch(
         force: If True, force regeneration even if cached response exists
 
     Returns:
-        Dict mapping prompt IDs to their responses
+        Dict mapping prompt IDs to their responses, ordered by input sequence
 
     Note:
         Either prompts or input_dir must be provided, but not both.
+        Results are returned in the same order as the input prompts.
         
     Example:
         >>> from llm_batch_helper import LLMConfig, process_prompts_batch
@@ -361,6 +373,7 @@ def process_prompts_batch(
         ...     config=config,
         ...     provider="openai"
         ... )
+        >>> # Results will be in the same order as input prompts
     """
     return _run_async_function(
         process_prompts_batch_async,
