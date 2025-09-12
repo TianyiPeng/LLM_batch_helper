@@ -12,7 +12,7 @@ A Python package that enables batch submission of prompts to LLM APIs, with buil
 
 ## Why we designed this package
 
-Imagine you have 5000 prompts you need to send to an LLM. Running them sequentially can be painfully slow—sometimes taking hours or even days. Worse, if the process fails midway, you’re forced to start all over again. We’ve struggled with this exact frustration, which is why we built this package, to directly tackle these pain points:
+**Imagine you have 5000 prompts you need to send to an LLM. Running them sequentially can be painfully slow—sometimes taking hours or even days. Worse, if the process fails midway, you’re forced to start all over again.** We’ve struggled with this exact frustration, which is why we built this package, to directly tackle these pain points:
 
 1. **Efficient Batch Processing**: How do you run LLM calls in batches efficiently? Our async implementation is 3X-100X faster than multi-thread/multi-process approaches. In my own experience, it reduces the time from 24 hours to 10min. 
 
