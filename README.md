@@ -408,6 +408,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Changelog
 
 ### v0.3.3
+- **🐛 Bug Fix**: Fixed caching issue that required verification_callback to be non-None
 - **📦 Package Maintenance**: Version sync and build improvements
 - Fixed version consistency across package files
 - Updated build process for improved reliability
