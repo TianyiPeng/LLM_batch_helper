@@ -47,7 +47,8 @@ Quick Start
    config = LLMConfig(
        model_name="gpt-4o-mini",
        temperature=1.0,
-       max_completion_tokens=100
+       max_completion_tokens=100,
+       max_concurrent_requests=100
    )
    
    # Define prompts

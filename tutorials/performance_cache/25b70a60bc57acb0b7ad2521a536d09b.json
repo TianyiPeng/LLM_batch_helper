@@ -1,0 +1,11 @@
+{
+  "prompt_input": "test 4014: just respond 4014",
+  "llm_response": {
+    "response_text": "4014",
+    "usage_details": {
+      "prompt_token_count": 29,
+      "completion_token_count": 2,
+      "total_token_count": 31
+    }
+  }
+}

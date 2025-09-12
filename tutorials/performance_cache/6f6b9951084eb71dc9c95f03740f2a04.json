@@ -1,0 +1,11 @@
+{
+  "prompt_input": "test 2025: just respond 2025",
+  "llm_response": {
+    "response_text": "2025",
+    "usage_details": {
+      "prompt_token_count": 29,
+      "completion_token_count": 2,
+      "total_token_count": 31
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "prompt_input": "test 945: just respond 945",
+  "llm_response": {
+    "response_text": "945",
+    "usage_details": {
+      "prompt_token_count": 27,
+      "completion_token_count": 1,
+      "total_token_count": 28
+    }
+  }
+}

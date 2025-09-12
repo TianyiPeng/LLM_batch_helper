@@ -1,0 +1,11 @@
+{
+  "prompt_input": "test 404: just respond 404",
+  "llm_response": {
+    "response_text": "404 Not Found",
+    "usage_details": {
+      "prompt_token_count": 27,
+      "completion_token_count": 3,
+      "total_token_count": 30
+    }
+  }
+}

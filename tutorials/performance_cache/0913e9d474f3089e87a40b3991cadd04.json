@@ -1,0 +1,11 @@
+{
+  "prompt_input": "test 4081: just respond 4081",
+  "llm_response": {
+    "response_text": "4081",
+    "usage_details": {
+      "prompt_token_count": 29,
+      "completion_token_count": 2,
+      "total_token_count": 31
+    }
+  }
+}

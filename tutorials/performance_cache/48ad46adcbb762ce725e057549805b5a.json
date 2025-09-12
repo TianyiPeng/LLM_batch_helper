@@ -1,0 +1,11 @@
+{
+  "prompt_input": "test 875: just respond 875",
+  "llm_response": {
+    "response_text": "875",
+    "usage_details": {
+      "prompt_token_count": 27,
+      "completion_token_count": 1,
+      "total_token_count": 28
+    }
+  }
+}

@@ -12,9 +12,9 @@ A Python package that enables batch submission of prompts to LLM APIs, with buil
 
 ## Why we designed this package
 
-Calling LLM APIs has become increasingly common, but several pain points exist in practice:
+Imagine you have 5000 prompts you need to send to an LLM. Running them sequentially can be painfully slow—sometimes taking hours or even days. Worse, if the process fails midway, you’re forced to start all over again. We’ve struggled with this exact frustration, which is why we built this package, to directly tackle these pain points:
 
-1. **Efficient Batch Processing**: How do you run LLM calls in batches efficiently? Our async implementation is 3X-100X faster than multi-thread/multi-process approaches.
+1. **Efficient Batch Processing**: How do you run LLM calls in batches efficiently? Our async implementation is 3X-100X faster than multi-thread/multi-process approaches. In my own experience, it reduces the time from 24 hours to 10min. 
 
 2. **API Reliability**: LLM APIs can be unstable, so we need robust retry mechanisms when calls get interrupted.
 
@@ -26,37 +26,22 @@ This package is designed to solve these exact pain points with async processing,
 
 ## Features
 
-- **Async Processing**: Submit multiple prompts concurrently for faster processing
-- **Response Caching**: Automatically cache responses to avoid redundant API calls
-- **Multiple Input Formats**: Support for both file-based and list-based prompts
-- **Provider Support**: Works with OpenAI (all models including GPT-5), OpenRouter (100+ models), and Together.ai APIs
-- **Retry Logic**: Built-in retry mechanism with exponential backoff and detailed logging
-- **Verification Callbacks**: Custom verification for response quality  
-- **Progress Tracking**: Real-time progress bars for batch operations
-- **Simplified API**: Async operations handled implicitly - no async/await needed (v0.3.0+)
-- **Detailed Error Logging**: See exactly what happens during retries with timestamps and error details
+- **🚀 Dramatic Speed Improvements**: **10-100x faster** than sequential processing ([see demo](https://github.com/TianyiPeng/LLM_batch_helper/blob/main/tutorials/performance_comparison_tutorial.ipynb))
+- **⚡ Async Processing**: Submit multiple prompts concurrently for maximum throughput
+- **💾 Smart Caching**: Automatically cache responses and resume interrupted work seamlessly
+- **📝 Multiple Input Formats**: Support for strings, tuples, dictionaries, and file-based prompts
+- **🌐 Multi-Provider Support**: Works with OpenAI (all models), OpenRouter (100+ models), and Together.ai
+- **🔄 Intelligent Retry Logic**: Built-in retry mechanism with exponential backoff and detailed logging
+- **✅ Quality Control**: Custom verification callbacks for response validation
+- **📊 Progress Tracking**: Real-time progress bars and comprehensive statistics
+- **🎯 Simplified API**: No async/await complexity - works seamlessly in Jupyter notebooks (v0.3.0+)
+- **🔧 Tunable Performance**: Adjust concurrency on-the-fly for optimal speed vs rate limits
 
 ## Installation
-
-### For Users (Recommended)
 
 ```bash
 # Install from PyPI
 pip install llm_batch_helper
-```
-
-### For Development
-
-```bash
-# Clone the repository
-git clone https://github.com/TianyiPeng/LLM_batch_helper.git
-cd llm_batch_helper
-
-# Install with Poetry
-poetry install
-
-# Activate the virtual environment
-poetry shell
 ```
 
 ## Quick Start
@@ -65,7 +50,7 @@ poetry shell
 
 **Option A: Environment Variables**
 ```bash
-# For OpenAI (all models including GPT-5)
+# For OpenAI (all OpenAI models including GPT-5)
 export OPENAI_API_KEY="your-openai-api-key"
 
 # For OpenRouter (100+ models - Recommended)
@@ -76,6 +61,11 @@ export TOGETHER_API_KEY="your-together-api-key"
 ```
 
 **Option B: .env File (Recommended for Development)**
+Create a `.env` file in your project:
+```
+OPENAI_API_KEY=your-openai-api-key
+```
+
 ```python
 # In your script, before importing llm_batch_helper
 from dotenv import load_dotenv
@@ -85,17 +75,17 @@ load_dotenv()  # Load from .env file
 from llm_batch_helper import LLMConfig, process_prompts_batch
 ```
 
-Create a `.env` file in your project:
-```
-OPENAI_API_KEY=your-openai-api-key
-TOGETHER_API_KEY=your-together-api-key
-```
+### 2. Interactive Tutorials (Recommended)
 
-### 2. Interactive Tutorial (Recommended)
+**🎯 NEW: Performance Comparison Tutorial**
+See the dramatic speed improvements! Our [Performance Comparison Tutorial](https://github.com/TianyiPeng/LLM_batch_helper/blob/main/tutorials/performance_comparison_tutorial.ipynb) demonstrates:
+- **10-100x speedup** vs naive sequential processing
+- Processing **5,000 prompts** in minutes instead of hours
+- **Smart caching** that lets you resume interrupted work
+- **Tunable concurrency** for optimal performance
 
-Check out the comprehensive Jupyter notebook [tutorial](https://github.com/TianyiPeng/LLM_batch_helper/blob/main/tutorials/llm_batch_helper_tutorial.ipynb).
-
-The tutorial covers all features with interactive examples!
+**📚 Complete Feature Tutorial**
+Check out the comprehensive [main tutorial](https://github.com/TianyiPeng/LLM_batch_helper/blob/main/tutorials/llm_batch_helper_tutorial.ipynb) covering all features with interactive examples!
 
 ### 3. Basic usage
 
@@ -111,10 +101,10 @@ config = LLMConfig(
     model_name="gpt-4o-mini",
     temperature=1.0,
     max_completion_tokens=100,
-    max_concurrent_requests=30  # number of concurrent requests with asyncIO
+    max_concurrent_requests=100  # number of concurrent requests with asyncIO, this number decides how fast your pipeline can run. We suggest a number that is as large as possible (e.g., 300) while making sure you are not over the rate limit constrained by the LLM APIs. 
 )
 
-# Process prompts - no async/await needed!
+# Process prompts
 prompts = [
     "What is the capital of France?",
     "What is 2+2?",
@@ -134,6 +124,49 @@ for prompt_id, response in results.items():
 ```
 
 **🎉 New in v0.3.0**: `process_prompts_batch` now handles async operations **implicitly** - no more async/await syntax needed! Works seamlessly in Jupyter notebooks.
+
+### 4. Multiple Input Formats
+
+The package supports three different input formats for maximum flexibility:
+
+```python
+from llm_batch_helper import LLMConfig, process_prompts_batch
+
+config = LLMConfig(
+    model_name="gpt-4o-mini",
+    temperature=1.0,
+    max_completion_tokens=100
+)
+
+# Mix different input formats in the same list
+prompts = [
+    # String format - ID will be auto-generated from hash
+    "What is the capital of France?",
+    
+    # Tuple format - (custom_id, prompt_text)
+    ("custom_id_1", "What is 2+2?"),
+    
+    # Dictionary format - {"id": custom_id, "text": prompt_text}
+    {"id": "shakespeare_q", "text": "Who wrote 'Hamlet'?"},
+    {"id": "science_q", "text": "Explain photosynthesis briefly."}
+]
+
+results = process_prompts_batch(
+    config=config,
+    provider="openai",
+    prompts=prompts,
+    cache_dir="cache"
+)
+
+# Print results with custom IDs
+for prompt_id, response in results.items():
+    print(f"{prompt_id}: {response['response_text']}")
+```
+
+**Input Format Requirements:**
+- **String**: Plain text prompt (ID auto-generated)
+- **Tuple**: `(prompt_id, prompt_text)` - both elements required
+- **Dictionary**: `{"id": "prompt_id", "text": "prompt_text"}` - both keys required
 
 ### 🔄 Backward Compatibility
 
@@ -325,7 +358,8 @@ llm_batch_helper/
 │   ├── prompts/               # Sample prompt files
 │   └── llm_cache/             # Example cache directory
 └── tutorials/                 # Interactive tutorials
-    └── llm_batch_helper_tutorial.ipynb  # Comprehensive Jupyter notebook tutorial
+    ├── llm_batch_helper_tutorial.ipynb  # Comprehensive feature tutorial
+    └── performance_comparison_tutorial.ipynb  # Performance demo (NEW!)
 ```
 
 ## Supported Models

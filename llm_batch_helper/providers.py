@@ -403,18 +403,22 @@ async def _process_single_prompt_attempt_with_verification(
             cache = LLMCache(cache_dir)
             cached_response = cache.get_cached_response(prompt_id)
             if cached_response is not None:
-                # Verify response if callback provided
                 cached_response_data = cached_response["llm_response"]
-                if config.verification_callback:
-                    verified = await asyncio.to_thread(
-                        config.verification_callback,
-                        prompt_id,
-                        cached_response_data,
-                        prompt_text,
-                        **config.verification_callback_args,
-                    )
-                    if verified:
-                        return prompt_id, {**cached_response_data, "from_cache": True}
+                
+                # If no verification callback, use cached response directly
+                if config.verification_callback is None:
+                    return prompt_id, {**cached_response_data, "from_cache": True}
+                
+                # Verify response if callback provided
+                verified = await asyncio.to_thread(
+                    config.verification_callback,
+                    prompt_id,
+                    cached_response_data,
+                    prompt_text,
+                    **config.verification_callback_args,
+                )
+                if verified:
+                    return prompt_id, {**cached_response_data, "from_cache": True}
 
         # Process the prompt
         last_exception_details = None

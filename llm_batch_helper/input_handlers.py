@@ -2,6 +2,8 @@ import hashlib
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 
+from .exceptions import InvalidPromptFormatError
+
 
 def read_prompt_files(input_dir: str) -> List[Tuple[str, str]]:
     """Read all text files from input directory and return as (filename, content) pairs.
@@ -53,12 +55,34 @@ def read_prompt_list(
         elif isinstance(item, tuple) and len(item) == 2:
             # Tuple format: (prompt_id, prompt_text)
             prompt_id, prompt_text = item
-        elif isinstance(item, dict) and "id" in item and "text" in item:
-            # Dict format: {"id": prompt_id, "text": prompt_text}
+        elif isinstance(item, dict):
+            # Dict format: must have both "id" and "text" keys
+            if "id" not in item:
+                raise InvalidPromptFormatError(
+                    f"Dictionary prompt is missing required 'id' key. "
+                    f"Dictionary format must be: {{'id': 'prompt_id', 'text': 'prompt_text'}}. "
+                    f"Got: {item}",
+                    invalid_item=item
+                )
+            if "text" not in item:
+                raise InvalidPromptFormatError(
+                    f"Dictionary prompt is missing required 'text' key. "
+                    f"Dictionary format must be: {{'id': 'prompt_id', 'text': 'prompt_text'}}. "
+                    f"Got: {item}",
+                    invalid_item=item
+                )
             prompt_id = item["id"]
             prompt_text = item["text"]
         else:
-            raise ValueError(f"Invalid prompt format: {item}")
+            raise InvalidPromptFormatError(
+                f"Invalid prompt format. Expected str, tuple, or dict, got {type(item).__name__}. "
+                f"Valid formats: "
+                f"- str: 'prompt text' "
+                f"- tuple: ('prompt_id', 'prompt_text') "
+                f"- dict: {{'id': 'prompt_id', 'text': 'prompt_text'}}. "
+                f"Got: {item}",
+                invalid_item=item
+            )
         prompts.append((prompt_id, prompt_text))
     return prompts
 

@@ -1,0 +1,11 @@
+{
+  "prompt_input": "test 4976: just respond 4976",
+  "llm_response": {
+    "response_text": "4976",
+    "usage_details": {
+      "prompt_token_count": 29,
+      "completion_token_count": 2,
+      "total_token_count": 31
+    }
+  }
+}
