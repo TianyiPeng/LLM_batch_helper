@@ -407,6 +407,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### v0.3.3
+- **📦 Package Maintenance**: Version sync and build improvements
+- Fixed version consistency across package files
+- Updated build process for improved reliability
+
+### v0.3.2
+- **📚 Documentation Updates**: Enhanced README with performance focus
+- Added new performance comparison tutorial showcasing 10-100x speedups
+- Improved examples with simplified API usage (no async/await)
+- Updated installation and quick start guides
+- Enhanced content organization and clarity
+
 ### v0.3.1
 - **🔧 Configuration Updates**: Optimized default values for better performance
 - Updated `max_retries` from 10 to 5 for faster failure detection
