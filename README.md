@@ -30,7 +30,7 @@ This package is designed to solve these exact pain points with async processing,
 - **⚡ Async Processing**: Submit multiple prompts concurrently for maximum throughput
 - **💾 Smart Caching**: Automatically cache responses and resume interrupted work seamlessly
 - **📝 Multiple Input Formats**: Support for strings, tuples, dictionaries, and file-based prompts
-- **🌐 Multi-Provider Support**: Works with OpenAI (all models), OpenRouter (100+ models), and Together.ai
+- **🌐 Multi-Provider Support**: Works with OpenAI (all models), OpenRouter (100+ models), Together.ai, and Google Gemini
 - **🔄 Intelligent Retry Logic**: Built-in retry mechanism with exponential backoff and detailed logging
 - **✅ Quality Control**: Custom verification callbacks for response validation
 - **📊 Progress Tracking**: Real-time progress bars and comprehensive statistics
@@ -58,6 +58,11 @@ export OPENROUTER_API_KEY="your-openrouter-api-key"
 
 # For Together.ai
 export TOGETHER_API_KEY="your-together-api-key"
+
+# For Google Gemini
+export GEMINI_API_KEY="your-gemini-api-key"
+# OR alternatively:
+export GOOGLE_API_KEY="your-gemini-api-key"
 ```
 
 **Option B: .env File (Recommended for Development)**
@@ -211,6 +216,33 @@ results = process_prompts_batch(
     prompts=prompts,
     config=config,
     provider="openrouter"  # Access to 100+ models!
+)
+
+for prompt_id, result in results.items():
+    print(f"Response: {result['response_text']}")
+```
+
+### Google Gemini Provider
+
+```python
+from llm_batch_helper import LLMConfig, process_prompts_batch
+
+config = LLMConfig(
+    model_name="gemini-1.5-pro",  # or "gemini-1.5-flash"
+    temperature=1.0,
+    max_completion_tokens=200
+)
+
+prompts = [
+    "Explain the theory of relativity.",
+    "What are the main causes of climate change?",
+    "How does photosynthesis work?"
+]
+
+results = process_prompts_batch(
+    prompts=prompts,
+    config=config,
+    provider="gemini"  # Use Google Gemini!
 )
 
 for prompt_id, result in results.items():
@@ -380,6 +412,13 @@ llm_batch_helper/
 - meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo
 - mistralai/Mixtral-8x7B-Instruct-v0.1
 - And many other open-source models
+
+### Google Gemini (Direct API)
+- **gemini-1.5-pro**: Most capable model for complex reasoning tasks
+- **gemini-1.5-flash**: Fast and cost-effective for most use cases
+- **gemini-1.0-pro**: Previous generation model
+
+**Note**: Gemini models support multimodal inputs (text, images, audio) through the Google AI Studio API.
 
 ## Documentation
 

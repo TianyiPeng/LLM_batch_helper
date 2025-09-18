@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "llm_batch_helper"
-version = "0.3.3"
+version = "0.4.0"
 description = "A Python package that enables batch submission of prompts to LLM APIs, with simplified interface and built-in async capabilities handled implicitly."
 authors = ["Tianyi Peng <tianyipeng95@gmail.com>"]
 readme = "README.md"
 license = "MIT"
 homepage = "https://github.com/TianyiPeng/LLM_batch_helper"
 repository = "https://github.com/TianyiPeng/LLM_batch_helper"
-keywords = ["llm", "openai", "together", "openrouter", "batch", "async", "ai", "nlp", "api"]
+keywords = ["llm", "openai", "together", "openrouter", "gemini", "batch", "async", "ai", "nlp", "api"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -27,6 +27,7 @@ httpx = ">=0.24.0,<2.0.0"
 openai = "^1.0.0"
 tenacity = "^8.0.0"
 tqdm = "^4.65.0"
+google-generativeai = "^0.3.0"
 
 [tool.poetry.group.dev.dependencies]
 python-dotenv = "^1.0.0"  # Optional for .env file support

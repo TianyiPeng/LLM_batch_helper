@@ -6,6 +6,7 @@ import warnings
 
 import httpx
 import openai
+import google.generativeai as genai
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential, before_sleep_log
 from tqdm.asyncio import tqdm_asyncio
 
@@ -231,6 +232,73 @@ async def _get_openrouter_response_direct(
             "usage_details": usage_details,
         }
 
+
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=4, max=60),
+    retry=retry_if_exception_type(
+        (
+            ConnectionError,
+            TimeoutError,
+            Exception,  # Gemini SDK may raise various exceptions
+        )
+    ),
+    before_sleep=log_retry_attempt,
+    reraise=True,
+)
+async def _get_gemini_response_direct(
+    prompt: str, config: LLMConfig
+) -> Dict[str, Union[str, Dict]]:
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY environment variable not set")
+
+    # Configure the Gemini client
+    genai.configure(api_key=api_key)
+    
+    # Create the model
+    model = genai.GenerativeModel(config.model_name)
+    
+    # Prepare the prompt with system instruction if provided
+    full_prompt = prompt
+    if config.system_instruction and config.system_instruction.strip():
+        full_prompt = f"{config.system_instruction}\n\n{prompt}"
+    
+    try:
+        # Generate content asynchronously
+        response = await asyncio.to_thread(
+            model.generate_content,
+            full_prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=config.temperature,
+                max_output_tokens=config.max_completion_tokens,
+                **{k: v for k, v in config.kwargs.items() if k in ['top_p', 'top_k', 'candidate_count']}
+            )
+        )
+        
+        # Extract usage information if available
+        usage_details = {
+            "prompt_token_count": getattr(response.usage_metadata, 'prompt_token_count', 0) if hasattr(response, 'usage_metadata') else 0,
+            "completion_token_count": getattr(response.usage_metadata, 'candidates_token_count', 0) if hasattr(response, 'usage_metadata') else 0,
+            "total_token_count": getattr(response.usage_metadata, 'total_token_count', 0) if hasattr(response, 'usage_metadata') else 0,
+        }
+        
+        return {
+            "response_text": response.text,
+            "usage_details": usage_details,
+        }
+        
+    except Exception as e:
+        # Handle potential safety blocks or other Gemini-specific errors
+        if hasattr(e, 'message') and 'block' in str(e).lower():
+            return {
+                "response_text": "[Content blocked by safety filters]",
+                "usage_details": {"prompt_token_count": 0, "completion_token_count": 0, "total_token_count": 0},
+                "blocked": True
+            }
+        raise e
+
+
 async def get_llm_response_with_internal_retry(
     prompt_id: str,
     prompt: str,
@@ -252,6 +320,8 @@ async def get_llm_response_with_internal_retry(
             response = await _get_together_response_direct(prompt, config)
         elif provider.lower() == "openrouter":
             response = await _get_openrouter_response_direct(prompt, config)
+        elif provider.lower() == "gemini":
+            response = await _get_gemini_response_direct(prompt, config)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
 
@@ -282,7 +352,7 @@ async def process_prompts_batch_async(
         prompts: Optional list of prompts in any supported format (string, tuple, or dict)
         input_dir: Optional path to directory containing prompt files
         config: LLM configuration
-        provider: LLM provider to use ("openai", "together", or "openrouter")
+        provider: LLM provider to use ("openai", "together", "openrouter", or "gemini")
         desc: Description for progress bar
         cache_dir: Optional directory for caching responses
         force: If True, force regeneration even if cached response exists
@@ -353,7 +423,7 @@ def process_prompts_batch(
         prompts: Optional list of prompts in any supported format (string, tuple, or dict)
         input_dir: Optional path to directory containing prompt files
         config: LLM configuration
-        provider: LLM provider to use ("openai", "together", or "openrouter")
+        provider: LLM provider to use ("openai", "together", "openrouter", or "gemini")
         desc: Description for progress bar
         cache_dir: Optional directory for caching responses
         force: If True, force regeneration even if cached response exists

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-09-18
+
+### Added
+- **New Provider Support**: Google Gemini integration with direct API access
+- Support for Gemini models: gemini-1.5-pro, gemini-1.5-flash, gemini-1.0-pro
+- Gemini-specific error handling for safety filter blocks
+- Environment variable support for both GEMINI_API_KEY and GOOGLE_API_KEY
+- Comprehensive Gemini documentation and examples in README
+- Test script for validating Gemini provider functionality
+
+### Changed
+- Updated provider documentation to include Gemini across all examples
+- Enhanced supported models section with Gemini model descriptions
+- Added google-generativeai dependency to pyproject.toml
+
 ## [0.3.1] - 2025-09-06
 
 ### Changed
