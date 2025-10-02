@@ -12,7 +12,7 @@ from tqdm.asyncio import tqdm_asyncio
 
 from .cache import LLMCache
 from .config import LLMConfig
-from .input_handlers import get_prompts
+from .input_handlers import get_prompts, get_messages
 
 
 def _run_async_function(async_func, *args, **kwargs):
@@ -81,7 +81,7 @@ def log_retry_attempt(retry_state):
     reraise=True,
 )
 async def _get_openai_response_direct(
-    prompt: str, config: LLMConfig
+    prompt: str, config: LLMConfig, messages: Optional[List[Dict[str, str]]] = None
 ) -> Dict[str, Union[str, Dict]]:
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
@@ -89,14 +89,20 @@ async def _get_openai_response_direct(
 
     async with httpx.AsyncClient(timeout=1000.0) as client:
         aclient = openai.AsyncOpenAI(api_key=api_key, http_client=client)
-        messages = [
-            {"role": "system", "content": config.system_instruction},
-            {"role": "user", "content": prompt},
-        ]
+        
+        if messages is not None:
+            # Message mode: use messages directly
+            message_list = messages
+        else:
+            # Prompt mode: construct messages from prompt and system instruction
+            message_list = [
+                {"role": "system", "content": config.system_instruction},
+                {"role": "user", "content": prompt},
+            ]
 
         response = await aclient.chat.completions.create(
             model=config.model_name,
-            messages=messages,
+            messages=message_list,
             temperature=config.temperature,
             max_completion_tokens=config.max_completion_tokens,
             **config.kwargs,
@@ -126,17 +132,22 @@ async def _get_openai_response_direct(
     reraise=True,
 )
 async def _get_together_response_direct(
-    prompt: str, config: LLMConfig
+    prompt: str, config: LLMConfig, messages: Optional[List[Dict[str, str]]] = None
 ) -> Dict[str, Union[str, Dict]]:
     api_key = os.environ.get("TOGETHER_API_KEY")
     if not api_key:
         raise ValueError("TOGETHER_API_KEY environment variable not set")
 
     async with httpx.AsyncClient(timeout=1000.0) as client:
-        messages = [
-            {"role": "system", "content": config.system_instruction},
-            {"role": "user", "content": prompt},
-        ]
+        if messages is not None:
+            # Message mode: use messages directly
+            message_list = messages
+        else:
+            # Prompt mode: construct messages from prompt and system instruction
+            message_list = [
+                {"role": "system", "content": config.system_instruction},
+                {"role": "user", "content": prompt},
+            ]
 
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -145,7 +156,7 @@ async def _get_together_response_direct(
 
         payload = {
             "model": config.model_name,
-            "messages": messages,
+            "messages": message_list,
             "temperature": config.temperature,
             "max_tokens": config.max_completion_tokens,
             **config.kwargs,
@@ -187,17 +198,22 @@ async def _get_together_response_direct(
     reraise=True,
 )
 async def _get_openrouter_response_direct(
-    prompt: str, config: LLMConfig
+    prompt: str, config: LLMConfig, messages: Optional[List[Dict[str, str]]] = None
 ) -> Dict[str, Union[str, Dict]]:
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         raise ValueError("OPENROUTER_API_KEY environment variable not set")
 
     async with httpx.AsyncClient(timeout=1000.0) as client:
-        messages = [
-            {"role": "system", "content": config.system_instruction},
-            {"role": "user", "content": prompt},
-        ]
+        if messages is not None:
+            # Message mode: use messages directly
+            message_list = messages
+        else:
+            # Prompt mode: construct messages from prompt and system instruction
+            message_list = [
+                {"role": "system", "content": config.system_instruction},
+                {"role": "user", "content": prompt},
+            ]
 
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -206,7 +222,7 @@ async def _get_openrouter_response_direct(
 
         payload = {
             "model": config.model_name,
-            "messages": messages,
+            "messages": message_list,
             "temperature": config.temperature,
             "max_tokens": config.max_completion_tokens,
             **config.kwargs,
@@ -247,7 +263,7 @@ async def _get_openrouter_response_direct(
     reraise=True,
 )
 async def _get_gemini_response_direct(
-    prompt: str, config: LLMConfig
+    prompt: str, config: LLMConfig, messages: Optional[List[Dict[str, str]]] = None
 ) -> Dict[str, Union[str, Dict]]:
     api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not api_key:
@@ -259,10 +275,27 @@ async def _get_gemini_response_direct(
     # Create the model
     model = genai.GenerativeModel(config.model_name)
     
-    # Prepare the prompt with system instruction if provided
-    full_prompt = prompt
-    if config.system_instruction and config.system_instruction.strip():
-        full_prompt = f"{config.system_instruction}\n\n{prompt}"
+    # Prepare the prompt
+    if messages is not None:
+        # Message mode: construct a single prompt from messages
+        # Note: Gemini doesn't directly support multi-turn conversations in the same way as OpenAI
+        # We'll concatenate messages into a single prompt with role indicators
+        full_prompt = ""
+        for msg in messages:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            if role == "system":
+                full_prompt += f"System: {content}\n\n"
+            elif role == "user":
+                full_prompt += f"User: {content}\n\n"
+            elif role == "assistant":
+                full_prompt += f"Assistant: {content}\n\n"
+        full_prompt = full_prompt.strip()
+    else:
+        # Prompt mode: use original logic
+        full_prompt = prompt
+        if config.system_instruction and config.system_instruction.strip():
+            full_prompt = f"{config.system_instruction}\n\n{prompt}"
     
     try:
         # Generate content asynchronously
@@ -306,6 +339,7 @@ async def get_llm_response_with_internal_retry(
     provider: str,
     cache: Optional[LLMCache] = None,
     force: bool = False,
+    messages: Optional[List[Dict[str, str]]] = None,
 ) -> Dict[str, Union[str, Dict]]:
     # Check cache first if available and not forcing regeneration
     if cache and not force:
@@ -315,13 +349,13 @@ async def get_llm_response_with_internal_retry(
 
     try:
         if provider.lower() == "openai":
-            response = await _get_openai_response_direct(prompt, config)
+            response = await _get_openai_response_direct(prompt, config, messages)
         elif provider.lower() == "together":
-            response = await _get_together_response_direct(prompt, config)
+            response = await _get_together_response_direct(prompt, config, messages)
         elif provider.lower() == "openrouter":
-            response = await _get_openrouter_response_direct(prompt, config)
+            response = await _get_openrouter_response_direct(prompt, config, messages)
         elif provider.lower() == "gemini":
-            response = await _get_gemini_response_direct(prompt, config)
+            response = await _get_gemini_response_direct(prompt, config, messages)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
 
@@ -339,6 +373,7 @@ async def get_llm_response_with_internal_retry(
 
 async def process_prompts_batch_async(
     prompts: Optional[List[Union[str, Tuple[str, str], Dict[str, Any]]]] = None,
+    messages: Optional[List[Union[Tuple[str, List[Dict[str, str]]], Dict[str, Any]]]] = None,
     input_dir: Optional[str] = None,
     config: LLMConfig = None,
     provider: str = "openai",
@@ -346,10 +381,11 @@ async def process_prompts_batch_async(
     cache_dir: Optional[str] = None,
     force: bool = False,
 ) -> Dict[str, Dict[str, Union[str, Dict]]]:
-    """Process a batch of prompts through the LLM.
+    """Process a batch of prompts or messages through the LLM.
 
     Args:
         prompts: Optional list of prompts in any supported format (string, tuple, or dict)
+        messages: Optional list of messages in format: [(message_id, [{'role': 'user', 'content': '...'}])]
         input_dir: Optional path to directory containing prompt files
         config: LLM configuration
         provider: LLM provider to use ("openai", "together", "openrouter", or "gemini")
@@ -358,37 +394,54 @@ async def process_prompts_batch_async(
         force: If True, force regeneration even if cached response exists
 
     Returns:
-        Dict mapping prompt IDs to their responses, ordered by input sequence
+        Dict mapping prompt/message IDs to their responses, ordered by input sequence
 
     Note:
-        Either prompts or input_dir must be provided, but not both.
-        Results are returned in the same order as the input prompts.
+        Either prompts, messages, or input_dir must be provided, but not multiple.
+        Results are returned in the same order as the input prompts/messages.
     """
-    if prompts is None and input_dir is None:
-        raise ValueError("Either prompts or input_dir must be provided")
-    if prompts is not None and input_dir is not None:
-        raise ValueError("Cannot specify both prompts and input_dir")
+    # Validate input arguments - only one mode allowed
+    input_count = sum(x is not None for x in [prompts, messages, input_dir])
+    if input_count == 0:
+        raise ValueError("Either prompts, messages, or input_dir must be provided")
+    if input_count > 1:
+        raise ValueError("Cannot specify multiple input sources. Use only one of: prompts, messages, or input_dir")
 
-    # Get prompts from either source
+    # Determine if we're in message mode or prompt mode
+    message_mode = messages is not None
+    
+    # Get prompts/messages from the appropriate source
     if input_dir is not None:
-        prompts = get_prompts(input_dir)
+        processed_inputs = get_prompts(input_dir)
+        message_mode = False  # File input is always prompt mode
+    elif message_mode:
+        processed_inputs = get_messages(messages)
     else:
-        prompts = get_prompts(prompts)
+        processed_inputs = get_prompts(prompts)
+        message_mode = False
 
     # Create semaphore for concurrent requests
     semaphore = asyncio.Semaphore(config.max_concurrent_requests)
 
-    # Process prompts
+    # Process prompts/messages
     results = {}
     # Keep track of original order for sorting results
-    prompt_order = {prompt_id: idx for idx, (prompt_id, _) in enumerate(prompts)}
+    prompt_order = {item_id: idx for idx, (item_id, _) in enumerate(processed_inputs)}
     
-    tasks = [
-        _process_single_prompt_attempt_with_verification(
-            prompt_id, prompt_text, config, provider, semaphore, cache_dir, force
-        )
-        for prompt_id, prompt_text in prompts
-    ]
+    if message_mode:
+        tasks = [
+            _process_single_message_attempt_with_verification(
+                message_id, message_list, config, provider, semaphore, cache_dir, force
+            )
+            for message_id, message_list in processed_inputs
+        ]
+    else:
+        tasks = [
+            _process_single_prompt_attempt_with_verification(
+                prompt_id, prompt_text, config, provider, semaphore, cache_dir, force
+            )
+            for prompt_id, prompt_text in processed_inputs
+        ]
 
     for future in tqdm_asyncio(asyncio.as_completed(tasks), total=len(tasks), desc=desc):
         prompt_id, response_data = await future
@@ -396,16 +449,17 @@ async def process_prompts_batch_async(
 
     # Sort results by original input order to maintain input sequence
     # Note: Python 3.7+ guarantees dict insertion order, we explicitly sort
-    # to ensure results match the original prompt order regardless of completion order
+    # to ensure results match the original prompt/message order regardless of completion order
     ordered_results = {}
-    for prompt_id in sorted(results.keys(), key=lambda pid: prompt_order[pid]):
-        ordered_results[prompt_id] = results[prompt_id]
+    for item_id in sorted(results.keys(), key=lambda pid: prompt_order[pid]):
+        ordered_results[item_id] = results[item_id]
     
     return ordered_results
 
 
 def process_prompts_batch(
     prompts: Optional[List[Union[str, Tuple[str, str], Dict[str, Any]]]] = None,
+    messages: Optional[List[Union[Tuple[str, List[Dict[str, str]]], Dict[str, Any]]]] = None,
     input_dir: Optional[str] = None,
     config: LLMConfig = None,
     provider: str = "openai",
@@ -414,13 +468,14 @@ def process_prompts_batch(
     force: bool = False,
 ) -> Dict[str, Dict[str, Union[str, Dict]]]:
     """
-    Process a batch of prompts through the LLM (synchronous version).
+    Process a batch of prompts or messages through the LLM (synchronous version).
     
     This is the main user-facing function that works in both regular Python scripts
     and Jupyter notebooks without requiring async/await syntax.
     
     Args:
         prompts: Optional list of prompts in any supported format (string, tuple, or dict)
+        messages: Optional list of messages in format: [(message_id, [{'role': 'user', 'content': '...'}])]
         input_dir: Optional path to directory containing prompt files
         config: LLM configuration
         provider: LLM provider to use ("openai", "together", "openrouter", or "gemini")
@@ -429,25 +484,32 @@ def process_prompts_batch(
         force: If True, force regeneration even if cached response exists
 
     Returns:
-        Dict mapping prompt IDs to their responses, ordered by input sequence
+        Dict mapping prompt/message IDs to their responses, ordered by input sequence
 
     Note:
-        Either prompts or input_dir must be provided, but not both.
-        Results are returned in the same order as the input prompts.
+        Either prompts, messages, or input_dir must be provided, but not multiple.
+        Results are returned in the same order as the input prompts/messages.
         
     Example:
         >>> from llm_batch_helper import LLMConfig, process_prompts_batch
         >>> config = LLMConfig(model_name="gpt-4o-mini")
+        >>> # Prompt mode
         >>> results = process_prompts_batch(
         ...     prompts=["What is 2+2?", "What is the capital of France?"],
         ...     config=config,
         ...     provider="openai"
         ... )
-        >>> # Results will be in the same order as input prompts
+        >>> # Message mode
+        >>> results = process_prompts_batch(
+        ...     messages=[("msg1", [{"role": "user", "content": "Hello!"}])],
+        ...     config=config,
+        ...     provider="openai"
+        ... )
     """
     return _run_async_function(
         process_prompts_batch_async,
         prompts=prompts,
+        messages=messages,
         input_dir=input_dir,
         config=config,
         provider=provider,
@@ -549,4 +611,104 @@ async def _process_single_prompt_attempt_with_verification(
 
         return prompt_id, last_exception_details or {
             "error": f"Exhausted all {config.max_retries} retries for {prompt_id}"
+        }
+
+
+async def _process_single_message_attempt_with_verification(
+    message_id: str,
+    message_list: List[Dict[str, str]],
+    config: LLMConfig,
+    provider: str,
+    semaphore: asyncio.Semaphore,
+    cache_dir: Optional[str] = None,
+    force: bool = False,
+):
+    """Process a single message with verification and caching."""
+    async with semaphore:
+        # For messages mode, we create a dummy prompt for caching purposes
+        # We serialize the messages to create a consistent cache key
+        import json
+        prompt_text = json.dumps(message_list, sort_keys=True)
+        
+        # Check cache first if cache_dir is provided
+        if cache_dir and not force:
+            cache = LLMCache(cache_dir)
+            cached_response = cache.get_cached_response(message_id)
+            if cached_response is not None:
+                cached_response_data = cached_response["llm_response"]
+                
+                # If no verification callback, use cached response directly
+                if config.verification_callback is None:
+                    return message_id, {**cached_response_data, "from_cache": True}
+                
+                # Verify response if callback provided
+                verified = await asyncio.to_thread(
+                    config.verification_callback,
+                    message_id,
+                    cached_response_data,
+                    prompt_text,
+                    **config.verification_callback_args,
+                )
+                if verified:
+                    return message_id, {**cached_response_data, "from_cache": True}
+
+        # Process the message
+        last_exception_details = None
+        for attempt in range(config.max_retries):
+            if attempt > 0:
+                print(f"🔁 [{datetime.now().strftime('%H:%M:%S')}] Application-level retry {attempt+1}/{config.max_retries} for message: {message_id}")
+            
+            try:
+                # Get LLM response with messages
+                llm_response_data = await get_llm_response_with_internal_retry(
+                    message_id, prompt_text, config, provider, messages=message_list
+                )
+
+                if "error" in llm_response_data:
+                    print(f"❌ [{datetime.now().strftime('%H:%M:%S')}] API call failed on attempt {attempt+1}: {llm_response_data.get('error', 'Unknown error')}")
+                    last_exception_details = llm_response_data
+                    if attempt < config.max_retries - 1:
+                        wait_time = min(2 * 2**attempt, 30)
+                        print(f"   Waiting {wait_time}s before next application retry...")
+                        await asyncio.sleep(wait_time)
+                    continue
+
+                # Verify response if callback provided
+                if config.verification_callback:
+                    verified = await asyncio.to_thread(
+                        config.verification_callback,
+                        message_id,
+                        llm_response_data,
+                        prompt_text,
+                        **config.verification_callback_args,
+                    )
+                    if not verified:
+                        last_exception_details = {
+                            "error": f"Verification failed on attempt {attempt + 1}",
+                            "message_id": message_id,
+                            "llm_response_data": llm_response_data,
+                        }
+                        if attempt == config.max_retries - 1:
+                            return message_id, last_exception_details
+                        continue
+
+                # Save to cache if cache_dir provided
+                if cache_dir:
+                    cache = LLMCache(cache_dir)
+                    cache.save_response(message_id, prompt_text, llm_response_data)
+
+                return message_id, llm_response_data
+
+            except Exception as e:
+                last_exception_details = {
+                    "error": f"Unexpected error: {e!s}",
+                    "message_id": message_id,
+                }
+                if attempt == config.max_retries - 1:
+                    return message_id, last_exception_details
+                # Sleep is now handled above with logging
+                continue
+
+        return message_id, last_exception_details or {
+            "error": f"Exhausted all {config.max_retries} retries for {message_id}"
         }

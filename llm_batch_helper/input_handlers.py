@@ -5,6 +5,68 @@ from typing import Any, Dict, List, Tuple, Union
 from .exceptions import InvalidPromptFormatError
 
 
+def read_message_list(
+    input_source: List[Union[Tuple[str, List[Dict[str, str]]], Dict[str, Any]]]
+) -> List[Tuple[str, List[Dict[str, str]]]]:
+    """Read messages from a list of various formats.
+    
+    Args:
+        input_source: List of messages in any of these formats:
+            - tuple: (message_id, [{'role': 'user', 'content': '...'}])
+            - dict: {"id": message_id, "messages": [{'role': 'user', 'content': '...'}]}
+    
+    Returns:
+        List of (message_id, messages_list) tuples
+    """
+    processed = []
+    for item in input_source:
+        if isinstance(item, tuple) and len(item) == 2:
+            message_id, message_list = item
+            if not isinstance(message_list, list):
+                raise InvalidPromptFormatError(
+                    f"Messages must be a list, got {type(message_list)}. "
+                    f"Tuple format must be: ('message_id', [messages_list]). "
+                    f"Got: {item}",
+                    invalid_item=item
+                )
+            processed.append((message_id, message_list))
+        elif isinstance(item, dict):
+            if "id" not in item:
+                raise InvalidPromptFormatError(
+                    f"Dictionary message is missing required 'id' key. "
+                    f"Dictionary format must be: {{'id': 'message_id', 'messages': [messages_list]}}. "
+                    f"Got: {item}",
+                    invalid_item=item
+                )
+            if "messages" not in item:
+                raise InvalidPromptFormatError(
+                    f"Dictionary message is missing required 'messages' key. "
+                    f"Dictionary format must be: {{'id': 'message_id', 'messages': [messages_list]}}. "
+                    f"Got: {item}",
+                    invalid_item=item
+                )
+            message_id = item["id"]
+            message_list = item["messages"]
+            if not isinstance(message_list, list):
+                raise InvalidPromptFormatError(
+                    f"Messages must be a list, got {type(message_list)}. "
+                    f"Dictionary format must be: {{'id': 'message_id', 'messages': [messages_list]}}. "
+                    f"Got: {item}",
+                    invalid_item=item
+                )
+            processed.append((message_id, message_list))
+        else:
+            raise InvalidPromptFormatError(
+                f"Invalid message format. Expected tuple or dict, got {type(item).__name__}. "
+                f"Valid formats: "
+                f"- tuple: ('message_id', [messages_list]) "
+                f"- dict: {{'id': 'message_id', 'messages': [messages_list]}}. "
+                f"Got: {item}",
+                invalid_item=item
+            )
+    return processed
+
+
 def read_prompt_files(input_dir: str) -> List[Tuple[str, str]]:
     """Read all text files from input directory and return as (filename, content) pairs.
 
@@ -104,5 +166,22 @@ def get_prompts(
         return read_prompt_files(input_source)
     elif isinstance(input_source, list):
         return read_prompt_list(input_source)
+    else:
+        raise ValueError(f"Invalid input source type: {type(input_source)}")
+
+
+def get_messages(
+    input_source: List[Union[Tuple[str, List[Dict[str, str]]], Dict[str, Any]]],
+) -> List[Tuple[str, List[Dict[str, str]]]]:
+    """Get messages from a list.
+
+    Args:
+        input_source: List of messages in various formats (tuple or dict)
+
+    Returns:
+        List of (message_id, messages_list) tuples
+    """
+    if isinstance(input_source, list):
+        return read_message_list(input_source)
     else:
         raise ValueError(f"Invalid input source type: {type(input_source)}")
