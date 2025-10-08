@@ -27,6 +27,7 @@ This package is designed to solve these exact pain points with async processing,
 
 - **🚀 Dramatic Speed Improvements**: **10-100x faster** than sequential processing ([see demo](https://github.com/TianyiPeng/LLM_batch_helper/blob/main/tutorials/performance_comparison_tutorial.ipynb))
 - **⚡ Async Processing**: Submit multiple prompts concurrently for maximum throughput
+- **💬 Message Mode**: **NEW!** Support for multi-turn conversations and conversation histories
 - **💾 Smart Caching**: Automatically cache responses and resume interrupted work seamlessly
 - **📝 Multiple Input Formats**: Support for strings, tuples, dictionaries, and file-based prompts
 - **🌐 Multi-Provider Support**: Works with OpenAI (all models), OpenRouter (100+ models), Together.ai, and Google Gemini
@@ -171,6 +172,70 @@ for prompt_id, response in results.items():
 - **String**: Plain text prompt (ID auto-generated)
 - **Tuple**: `(prompt_id, prompt_text)` - both elements required
 - **Dictionary**: `{"id": "prompt_id", "text": "prompt_text"}` - both keys required
+
+### 💬 Message Mode (NEW!)
+
+**New in v0.4.0**: Support for multi-turn conversations! You can now pass entire conversation histories directly to LLMs.
+
+```python
+from llm_batch_helper import LLMConfig, process_prompts_batch
+
+config = LLMConfig(
+    model_name="gpt-4o-mini",
+    temperature=0.7,
+    max_completion_tokens=200
+)
+
+# Message mode - pass conversation histories directly
+messages = [
+    # Multi-turn conversation
+    ("conversation_1", [
+        {"role": "system", "content": "You are a helpful math tutor."},
+        {"role": "user", "content": "What is 12 × 15?"},
+        {"role": "assistant", "content": "12 × 15 = 180"},
+        {"role": "user", "content": "How did you calculate that?"}
+    ]),
+    
+    # Simple user message
+    ("simple_question", [
+        {"role": "user", "content": "Tell me a fun fact about space."}
+    ]),
+    
+    # Dictionary format also supported
+    {
+        "id": "creative_task",
+        "messages": [
+            {"role": "system", "content": "You are a creative writing assistant."},
+            {"role": "user", "content": "Write a haiku about programming."}
+        ]
+    }
+]
+
+results = process_prompts_batch(
+    messages=messages,  # Use 'messages' instead of 'prompts'
+    config=config,
+    provider="openai"
+)
+
+for message_id, response in results.items():
+    print(f"{message_id}: {response['response_text']}")
+```
+
+**Message Format Requirements:**
+- **Tuple**: `(message_id, [{'role': 'user', 'content': '...'}])` - message list required
+- **Dictionary**: `{"id": "message_id", "messages": [message_list]}` - both keys required
+- **Roles**: Supports `"system"`, `"user"`, and `"assistant"` roles
+- **Validation**: Only one of `prompts`, `messages`, or `input_dir` can be used at a time
+
+**Key Benefits:**
+- 🔄 **Multi-turn Support**: Pass entire conversation histories
+- 🔧 **Full Compatibility**: Works with all providers and existing features (caching, retries, verification)
+- 📈 **Same Performance**: Inherits all async and batching capabilities
+- 🎯 **Flexible**: Mix different conversation lengths and formats in the same batch
+
+**When to use each mode:**
+- **Prompt Mode**: Single-turn interactions, simple Q&A, batch processing of independent prompts
+- **Message Mode**: Multi-turn conversations, chat applications, when you need precise control over conversation context
 
 ### 🔄 Backward Compatibility
 
